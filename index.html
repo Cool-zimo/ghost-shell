@@ -8,117 +8,66 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
         --g: #00ff41;
-        --g-dim: #0a7a24;
+        --gdim: #0a7a24;
         --c: #00bfff;
         --w: #ffb000;
         --e: #ff3b30;
-        --t: 1; /* 节奏倍率，?t=0.15 可加速演示 */
+        --m: #b48ead;
+        --t: 1;
     }
     html, body { height: 100%; }
     body {
         background: #050505;
         color: var(--g);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
-        font-size: 13px;
-        line-height: 1.55;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New",
+                     "Microsoft YaHei", "PingFang SC", monospace;
+        font-size: 12.5px;
+        line-height: 1.5;
         overflow: hidden;
     }
-    canvas.matrix {
-        position: fixed; inset: 0;
-        width: 100%; height: 100%;
-        pointer-events: none;
-        z-index: 0;
-        opacity: .18;
-    }
-    #boot {
-        position: relative; z-index: 1;
-        height: 100%;
-        padding: 18px 20px 0;
-        display: flex; flex-direction: column;
-    }
+    canvas.matrix { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: .16; }
+    #boot { position: relative; z-index: 1; height: 100%; padding: 16px 18px 0; display: flex; flex-direction: column; }
     #head {
         display: flex; justify-content: space-between; align-items: baseline;
-        color: var(--g-dim); font-size: 11px; letter-spacing: .5px;
-        border-bottom: 1px solid #0d2a12;
-        padding-bottom: 6px; margin-bottom: 10px;
-        flex: 0 0 auto;
+        color: var(--gdim); font-size: 10.5px; letter-spacing: .4px;
+        border-bottom: 1px solid #0d2a12; padding-bottom: 5px; margin-bottom: 8px; flex: 0 0 auto;
     }
     #head b { color: var(--g); font-weight: 600; }
-    #mute {
-        background: none; border: 1px solid #0d2a12; color: var(--g-dim);
-        font: inherit; font-size: 10px; padding: 1px 7px; border-radius: 3px;
-        cursor: pointer;
-    }
-    #mute:hover { color: var(--g); border-color: var(--g-dim); }
-    #lines {
-        flex: 1 1 auto; overflow: hidden;
-        display: flex; flex-direction: column; justify-content: flex-end;
-        padding-bottom: 8px;
-    }
-    .ln { white-space: pre-wrap; word-break: break-all; }
-    .ln .zh {
-        color: #4d6b52; font-size: 11.5px;
-        display: block; padding-left: 16px;
-    }
-    .ok  { color: var(--g); }
-    .inf { color: var(--c); }
-    .warn{ color: var(--w); }
-    .err { color: var(--e); }
-    .dim { color: var(--g-dim); }
-    .cur { color: var(--g); }
-    #barwrap { flex: 0 0 auto; padding: 10px 0 16px; }
-    #barmeta {
-        display: flex; justify-content: space-between;
-        font-size: 11px; color: var(--g-dim); margin-bottom: 5px;
-    }
+    #mute { background: none; border: 1px solid #0d2a12; color: var(--gdim); font: inherit; font-size: 10px; padding: 1px 7px; border-radius: 3px; cursor: pointer; }
+    #mute:hover { color: var(--g); border-color: var(--gdim); }
+    #lines { flex: 1 1 auto; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 6px; }
+    .ln { white-space: pre; overflow: hidden; text-overflow: clip; }
+    .ok   { color: var(--g); }
+    .inf  { color: var(--c); }
+    .warn { color: var(--w); }
+    .err  { color: var(--e); }
+    .dim  { color: var(--gdim); }
+    .mag  { color: var(--m); }
+    .k    { color: var(--c); }
+    .v    { color: var(--g); }
+    .pb   { color: var(--gdim); }
+    #barwrap { flex: 0 0 auto; padding: 8px 0 14px; }
+    #barmeta { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--gdim); margin-bottom: 4px; }
     #phase { color: var(--c); letter-spacing: 1px; }
     #pct { color: var(--g); font-weight: 600; }
-    #bar {
-        height: 14px; border: 1px solid #0d3a16; border-radius: 2px;
-        background: #071007; overflow: hidden; position: relative;
-    }
-    #fill {
-        height: 100%; width: 0%;
-        background: repeating-linear-gradient(90deg, var(--g) 0 8px, #00c233 8px 16px);
-        box-shadow: 0 0 12px rgba(0,255,65,.55);
-        transition: width .35s linear;
-    }
+    #bar { height: 13px; border: 1px solid #0d3a16; border-radius: 2px; background: #071007; overflow: hidden; }
+    #fill { height: 100%; width: 0%; background: repeating-linear-gradient(90deg, var(--g) 0 8px, #00c233 8px 16px); box-shadow: 0 0 12px rgba(0,255,65,.5); transition: width .35s linear; }
     #bar.bad { border-color: #4a0d0d; }
-    #bar.bad #fill { background: repeating-linear-gradient(90deg, var(--e) 0 8px, #b3201a 8px 16px); box-shadow: 0 0 12px rgba(255,59,48,.5); }
-    #skip { text-align: center; color: #2e4a33; font-size: 10.5px; margin-top: 7px; }
+    #bar.bad #fill { background: repeating-linear-gradient(90deg, var(--e) 0 8px, #b3201a 8px 16px); box-shadow: 0 0 12px rgba(255,59,48,.45); }
+    #skip { text-align: center; color: #2e4a33; font-size: 10px; margin-top: 6px; }
 
-    /* ---------- 最终页 ---------- */
-    #final {
-        position: fixed; inset: 0; z-index: 5;
-        background: #0a0a0a;
-        display: none; flex-direction: column;
-        justify-content: center; align-items: center;
-        overflow: hidden;
-    }
+    #final { position: fixed; inset: 0; z-index: 5; background: #0a0a0a; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
     #final.on { display: flex; }
-    /* 0.4s ≈ 2.5Hz，低于光敏性癫痫 3Hz 安全线；原 0.15s(6.7Hz) 有真实风险 */
-    .glitch {
-        font-size: 72px; font-weight: bold; color: #ff0000;
-        text-shadow: 0 0 10px #ff0000, 0 0 40px #ff0000;
-        animation: flicker .4s infinite;
-    }
-    @keyframes flicker {
-        0%,100% { opacity: 1; }
-        50% { opacity: .82; }
-        25% { transform: skewX(2deg); }
-        75% { transform: skewX(-2deg); }
-    }
+    /* 0.4s ≈ 2.5Hz，低于光敏性癫痫 3Hz 安全线 */
+    .glitch { font-size: 72px; font-weight: bold; color: #ff0000; text-shadow: 0 0 10px #ff0000, 0 0 40px #ff0000; animation: flicker .4s infinite; }
+    @keyframes flicker { 0%,100%{opacity:1;} 50%{opacity:.82;} 25%{transform:skewX(2deg);} 75%{transform:skewX(-2deg);} }
     .sub { color: #00ff00; font-size: 20px; margin-top: 30px; text-shadow: 0 0 5px #00ff00; }
     .ip2 { color: #888; font-size: 14px; margin-top: 20px; }
-    .hint {
-        position: fixed; bottom: 14px; left: 0; width: 100%;
-        text-align: center; color: #555; font-size: 12px;
-    }
-    @media (max-width: 520px) {
-        body { font-size: 11.5px; }
+    .hint { position: fixed; bottom: 14px; left: 0; width: 100%; text-align: center; color: #555; font-size: 12px; }
+    @media (max-width: 620px) {
+        body { font-size: 10.5px; }
         .glitch { font-size: 40px; }
         .sub { font-size: 15px; margin-top: 20px; }
-        .ln .zh { font-size: 10.5px; }
     }
 </style>
 </head>
@@ -128,15 +77,12 @@
 
 <div id="boot">
     <div id="head">
-        <span><b>ghost-shell</b> v2.7.1 &middot; remote session</span>
+        <span><b>ghost-shell</b> · pacman v7.0.1 · remote session</span>
         <button id="mute" type="button">sound: on</button>
     </div>
     <div id="lines"></div>
     <div id="barwrap">
-        <div id="barmeta">
-            <span id="phase">INIT</span>
-            <span id="pct">0%</span>
-        </div>
+        <div id="barmeta"><span id="phase">INIT</span><span id="pct">0%</span></div>
         <div id="bar"><div id="fill"></div></div>
         <div id="skip">press any key / click to skip</div>
     </div>
@@ -152,20 +98,38 @@
 <script>
 "use strict";
 /* ------------------------------------------------------------------
-   ghost-shell —— 伪入侵演示页
+   ghost-shell / pacman 风格伪入侵演示
 
-   边界（很重要，别改）：
-   1. 一切数据只在本地采集、本地显示，不发往任何服务器。
-      唯一外部请求是查询公网 IP 的公开 API，结果也只是显示出来。
-   2. 麦克风：只向浏览器申请一次权限（为了让浏览器弹真实的授权框），
-      拿到流之后立刻 stop 所有 track。不录音、不分析、不上传。
-   3. 主机名 / 管理员 / 内存地址 / 载荷 全是编的，中文里已标注「伪造」。
+   边界（别改）：
+   1. 一切数据本地采集、本地显示，不发往任何服务器。
+      唯一外部请求是查公网 IP 的公开 API，结果只用于显示。
+   2. 麦克风：只申请一次权限（浏览器弹真授权框），拿到流立刻 stop 全部 track。
+      不录音、不分析、不上传。
+   3. 主机名 / 内核地址 / 破坏类命令（delete 文件系統、rm -rf 等）纯属演出。
 ------------------------------------------------------------------- */
 
-/* ---------- 节奏控制 ---------- */
 var T = parseFloat(new URLSearchParams(location.search).get('t')) || 1;
 function ms(v){ return Math.max(0, Math.round(v * T)); }
 function wait(v){ return new Promise(function(r){ setTimeout(r, ms(v)); }); }
+function rep(s, n){ var o = ''; for (var i = 0; i < n; i++) o += s; return o; }
+/* 显示宽度：CJK / 全角在等宽字体里占 2 列，按字符数补齐会让中英混排行歪掉 */
+function dw(s){
+    var n = 0;
+    for (var i = 0; i < s.length; i++){
+        var c = s.charCodeAt(i);
+        n += (c >= 0x1100 && (c <= 0x115f || (c >= 0x2e80 && c <= 0xa4cf && c !== 0x303f) ||
+              (c >= 0xac00 && c <= 0xd7a3) || (c >= 0xf900 && c <= 0xfaff) ||
+              (c >= 0xfe30 && c <= 0xfe6f) || (c >= 0xff00 && c <= 0xff60) ||
+              (c >= 0xffe0 && c <= 0xffe6))) ? 2 : 1;
+    }
+    return n;
+}
+function padR(s, n){ s = String(s); var d = dw(s); return d >= n ? s : s + rep(' ', n - d); }
+function padL(s, n){ s = String(s); var d = dw(s); return d >= n ? s : rep(' ', n - d) + s; }
+
+var NARROW = window.innerWidth < 620;
+var BARW = NARROW ? 12 : 22;
+var NAMEW = NARROW ? 24 : 38;
 
 /* ---------- 矩阵雨 ---------- */
 (function(){
@@ -177,8 +141,7 @@ function wait(v){ return new Promise(function(r){ setTimeout(r, ms(v)); }); }
         drops = [];
         for (var i = 0; i < cv.width / fs; i++) drops[i] = Math.random() * cv.height;
     }
-    size();
-    window.addEventListener('resize', size);
+    size(); window.addEventListener('resize', size);
     setInterval(function(){
         ctx.fillStyle = 'rgba(0,0,0,0.06)';
         ctx.fillRect(0, 0, cv.width, cv.height);
@@ -191,7 +154,7 @@ function wait(v){ return new Promise(function(r){ setTimeout(r, ms(v)); }); }
     }, 55);
 })();
 
-/* ---------- 轻量音效（首次交互后才可能出声，浏览器策略如此） ---------- */
+/* ---------- 音效 ---------- */
 var AC = null, soundOn = true;
 function beep(){
     if (!soundOn) return;
@@ -199,8 +162,7 @@ function beep(){
         if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
         if (AC.state === 'suspended') return;
         var o = AC.createOscillator(), g = AC.createGain();
-        o.type = 'square';
-        o.frequency.value = 600 + Math.random() * 300;
+        o.type = 'square'; o.frequency.value = 620 + Math.random() * 280;
         g.gain.value = 0.015;
         o.connect(g); g.connect(AC.destination);
         o.start(); o.stop(AC.currentTime + 0.02);
@@ -211,75 +173,81 @@ document.getElementById('mute').addEventListener('click', function(){
     this.textContent = 'sound: ' + (soundOn ? 'on' : 'off');
 });
 
-/* ---------- 终端输出 ---------- */
+/* ---------- 终端 ---------- */
 var box = document.getElementById('lines');
 var fill = document.getElementById('fill'), bar = document.getElementById('bar');
 var pctEl = document.getElementById('pct'), phaseEl = document.getElementById('phase');
 var pct = 0;
-
-function setPct(v){
-    pct = Math.max(0, Math.min(100, v));
-    fill.style.width = pct + '%';
-    pctEl.textContent = Math.round(pct) + '%';
-}
+function setPct(v){ pct = Math.max(0, Math.min(100, v)); fill.style.width = pct + '%'; pctEl.textContent = Math.round(pct) + '%'; }
 function setPhase(s){ phaseEl.textContent = s; }
 function scroll(){ box.scrollTop = box.scrollHeight; }
 
-function pad(s, n){
-    s = String(s);
-    while (s.length < n) s += '.';
-    return s;
+function mk(cls){
+    var ln = document.createElement('div');
+    ln.className = 'ln ' + (cls || 'ok');
+    box.appendChild(ln); scroll();
+    return ln;
 }
-
-/* 逐字打字机；中文解释整段淡入，不逐字，否则太慢 */
-function typeLine(en, zh, cls){
-    return new Promise(function(resolve){
-        var ln = document.createElement('div');
-        ln.className = 'ln ' + (cls || 'ok');
-        var span = document.createElement('span');
-        ln.appendChild(span);
-        box.appendChild(ln);
-        scroll();
-        var i = 0;
+/* 打字机行 */
+function typeLine(text, cls){
+    return new Promise(function(res){
+        var ln = mk(cls), i = 0;
         (function step(){
-            if (i >= en.length){
-                if (zh){
-                    var z = document.createElement('span');
-                    z.className = 'zh';
-                    z.textContent = '└ ' + zh;
-                    ln.appendChild(z);
-                    scroll();
-                }
-                return resolve();
-            }
-            span.textContent += en.charAt(i++);
+            if (i >= text.length) return res();
+            ln.textContent += text.charAt(i++);
             if (i % 3 === 0) beep();
             scroll();
-            setTimeout(step, ms(9));
+            setTimeout(step, ms(8));
         })();
     });
 }
+/* pacman 式进度块 */
+function barStr(i){
+    return '[' + rep('#', i) + rep('-', BARW - i) + '] ' + padL(Math.round(i / BARW * 100), 3) + '%';
+}
+/* 一行：左侧固定文字 + 右侧 [####] 走到 100% */
+async function pacRow(left, cls){
+    var ln = mk(cls || 'ok');
+    var l = document.createElement('span'); l.className = 'pn';
+    var b = document.createElement('span'); b.className = 'pb';
+    ln.appendChild(l); ln.appendChild(b);
+    l.textContent = (NARROW ? left : padR(left, NAMEW)) + ' ';
+    b.textContent = barStr(0);
+    scroll();
+    var steps = NARROW ? 7 : 9;
+    for (var i = 1; i <= steps; i++){
+        await wait(28);
+        if (skipped) { b.textContent = barStr(BARW); return; }
+        b.textContent = barStr(Math.round(BARW * i / steps));
+        beep();
+    }
+}
+/* 下载行：名字 + 大小 + 速度 + ETA + 进度块 */
+async function dlRow(name, size, speed, eta, cls){
+    var left = NARROW ? name : padR(name, 33) + ' ' + padL(size, 9) + ' ' + padL(speed, 11) + ' ' + padL(eta, 5);
+    await pacRow(left, cls);
+}
+/* key :: value 行（真信息用） */
+function kv(k, v, cls){
+    return typeLine('   ' + padR(k, NARROW ? 8 : 11) + ':: ' + v, cls || '');
+}
 
-/* ---------- 真实采集：全部 try/catch + 超时，任何一项失败都不能卡住 ---------- */
+/* ---------- 真实采集 ---------- */
 var R = {};
 function withTimeout(p, t){
     return Promise.race([p, new Promise(function(r){ setTimeout(function(){ r(null); }, t); })]);
 }
-function hash(s){
-    var h = 5381;
-    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
-    return h.toString(16).toUpperCase().padStart(8, '0');
-}
+function hash(s){ var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(16).toUpperCase(); }
 function ua(){
     var s = navigator.userAgent, os = 'unknown', br = 'unknown';
     if (/Windows NT 10/.test(s)) os = 'Windows 10/11';
     else if (/Windows/.test(s)) os = 'Windows';
     else if (/Android/.test(s)) os = 'Android ' + (s.match(/Android ([\d.]+)/) || [,''])[1];
-    else if (/iPhone|iPad/.test(s)) os = 'iOS ' + (s.match(/OS (\d+)/) || [,''])[1].replace('_','.');
+    else if (/iPhone|iPad/.test(s)) os = 'iOS ' + ((s.match(/OS (\d+)/) || [,''])[1] || '').replace('_','.');
     else if (/Mac OS X/.test(s)) os = 'macOS';
     else if (/Linux/.test(s)) os = 'Linux';
     if (/Edg\//.test(s)) br = 'Edge ' + (s.match(/Edg\/([\d.]+)/) || [,''])[1];
-    else if (/Chrome\//.test(s)) br = 'Chrome ' + (s.match(/Chrome\/([\d.]+)/) || [,''])[1];
+    else if (/Chrome\//.test(s)) br = 'Chrome ' + ((s.match(/Chrome\/(\d+)/) || [,''])[1]) ;
     else if (/Firefox\//.test(s)) br = 'Firefox ' + (s.match(/Firefox\/([\d.]+)/) || [,''])[1];
     else if (/Safari\//.test(s)) br = 'Safari';
     return { os: os, br: br };
@@ -301,45 +269,26 @@ function canvasFp(){
         x.fillStyle = '#f60'; x.fillRect(0, 0, 120, 22);
         x.fillStyle = '#06f'; x.font = '15px Arial'; x.fillText('ghost-shell ▓ 0123', 4, 26);
         x.fillStyle = 'rgba(0,255,65,.6)'; x.fillRect(20, 44, 90, 12);
-        return hash(c.toDataURL());
+        return '0x' + hash(c.toDataURL()).slice(0, 8).toUpperCase();
     }catch(e){ return 'n/a'; }
 }
-function audioFp(){
-    try{
-        var C = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-        if (!C) return 'n/a';
-        var ac = new C(1, 44100, 44100), o = ac.createOscillator();
-        o.type = 'triangle'; o.frequency.value = 10000;
-        o.connect(ac.destination); o.start(0);
-        var s = ac.startRendering ? ac.startRendering() : null;
-        return s && s.then ? 'queued' : 'n/a';
-    }catch(e){ return 'n/a'; }
-}
-/* 用 canvas 量文本宽度对比，而不是 document.fonts.check —— 后者对没装的字体也会
-   返回 true（它会 fallback），测出来全是命中，等于没测。 */
+/* 用 canvas 量文本宽度比对，避开 document.fonts.check 对未装字体也返回 true 的坑 */
 function fonts(){
-    var tests = ['Microsoft YaHei','SimSun','PingFang SC','Hiragino Sans GB','Helvetica Neue',
-                 'Arial Black','Consolas','Menlo','Impact','Tahoma','Georgia','Courier New'];
-    var bases = ['monospace','sans-serif','serif'];
-    var probe = 'mmmmmmmmmmlliWW@', size = '72px';
+    var tests = ['Microsoft YaHei','SimSun','PingFang SC','Hiragino Sans GB','Helvetica Neue','Arial Black','Consolas','Menlo','Impact','Tahoma','Georgia','Courier New'];
+    var bases = ['monospace','sans-serif','serif'], probe = 'mmmmmmmmmmlliWW@', size = '72px';
     try{
         var c = document.createElement('canvas').getContext('2d');
         function w(f){ c.font = size + ' ' + f; return c.measureText(probe).width; }
-        var ref = {};
-        bases.forEach(function(b){ ref[b] = w(b); });
+        var ref = {}; bases.forEach(function(b){ ref[b] = w(b); });
         var hit = [];
-        tests.forEach(function(f){
-            if (bases.some(function(b){ return w('"' + f + '",' + b) !== ref[b]; })) hit.push(f);
-        });
-        return hit.length + '/' + tests.length + ' :: ' + (hit.slice(0, 3).join(', ') || 'none');
+        tests.forEach(function(f){ if (bases.some(function(b){ return w('"' + f + '",' + b) !== ref[b]; })) hit.push(f); });
+        return hit.length + '/' + tests.length + ' (' + (hit.slice(0, 3).join(', ') || 'none') + ')';
     }catch(e){ return 'n/a'; }
 }
 function battery(){
     try{
         if (!navigator.getBattery) return Promise.resolve('n/a');
-        return navigator.getBattery().then(function(b){
-            return Math.round(b.level * 100) + '% ' + (b.charging ? '(charging)' : '(on battery)');
-        }).catch(function(){ return 'n/a'; });
+        return navigator.getBattery().then(function(b){ return Math.round(b.level * 100) + '% ' + (b.charging ? '(charging)' : '(on battery)'); }).catch(function(){ return 'n/a'; });
     }catch(e){ return Promise.resolve('n/a'); }
 }
 function lanIp(){
@@ -349,7 +298,7 @@ function lanIp(){
             if (!C) return res('n/a');
             var pc = new C({ iceServers: [] });
             pc.createDataChannel('x');
-            pc.createOffer().then(function(o){ return pc.setLocalDescription(o); }).catch(function(){ res('n/a'); });
+            pc.createOffer().then(function(o){ return pc.setLocalDescription(o); }).catch(function(){});
             var found = [];
             pc.onicecandidate = function(e){
                 if (e && e.candidate && e.candidate.candidate){
@@ -357,92 +306,73 @@ function lanIp(){
                     if (m && found.indexOf(m[1]) < 0) found.push(m[1]);
                 }
             };
-            setTimeout(function(){
-                try{ pc.close(); }catch(e){}
-                res(found.length ? found.slice(0, 2).join(', ') : 'masked (.local)');
-            }, 1200);
+            setTimeout(function(){ try{ pc.close(); }catch(e){} res(found.length ? found.slice(0,2).join(', ') : 'masked (.local)'); }, 1200);
         }catch(e){ res('n/a'); }
     });
 }
 function pubIp(){
-    var apis = ['https://api.ipify.org?format=json', 'https://api64.ipify.org?format=json', 'https://ipapi.co/json/'];
-    var i = 0;
+    var apis = ['https://api.ipify.org?format=json','https://api64.ipify.org?format=json','https://ipapi.co/json/'], i = 0;
     function next(){
         if (i >= apis.length) return Promise.resolve('unavailable');
         var u = apis[i++];
-        return withTimeout(
-            fetch(u, { cache: 'no-store' }).then(function(r){ return r.json(); }).then(function(j){
-                return (j.ip || j.query || 'unavailable') + (j.city ? '  ~' + j.city : '');
-            }).catch(next), 3500
-        );
+        return withTimeout(fetch(u, { cache: 'no-store' }).then(function(r){ return r.json(); }).then(function(j){
+            return (j.ip || j.query || 'unavailable') + (j.city ? ' ~' + j.city : '');
+        }).catch(next), 3500);
     }
     return next();
 }
 function devices(){
     try{
-        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return Promise.resolve([]);
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return Promise.resolve({});
         return withTimeout(navigator.mediaDevices.enumerateDevices().then(function(ds){
-            var out = {};
+            var o = {};
             ds.forEach(function(d){
                 if (!d.label) return;
-                (out[d.kind] = out[d.kind] || []);
-                if (out[d.kind].indexOf(d.label) < 0) out[d.kind].push(d.label);
+                (o[d.kind] = o[d.kind] || []);
+                if (o[d.kind].indexOf(d.label) < 0) o[d.kind].push(d.label);
             });
-            return out;
-        }).catch(function(){ return []; }), 2500);
-    }catch(e){ return Promise.resolve([]); }
+            return o;
+        }).catch(function(){ return {}; }), 2500);
+    }catch(e){ return Promise.resolve({}); }
 }
+/* 只申请，拿到立刻关。不录音、不分析、不上传。 */
 function mic(){
-    /* 只申请一次权限，拿到后立刻关闭。不录音、不分析、不上传。 */
     return new Promise(function(res){
         try{
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return res({ ok: false, why: 'unsupported' });
-            var t = setTimeout(function(){ res({ ok: false, why: 'timeout' }); }, 12000);
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(function(st){
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return res({ ok:false, why:'unsupported' });
+            var t = setTimeout(function(){ res({ ok:false, why:'timeout' }); }, 12000);
+            navigator.mediaDevices.getUserMedia({ audio:true }).then(function(st){
                 clearTimeout(t);
-                st.getTracks().forEach(function(tr){ tr.stop(); });   // 立即停止
-                res({ ok: true });
-            }).catch(function(err){
-                clearTimeout(t);
-                res({ ok: false, why: (err && err.name) || 'denied' });
-            });
-        }catch(e){ res({ ok: false, why: 'error' }); }
+                st.getTracks().forEach(function(tr){ tr.stop(); });
+                res({ ok:true });
+            }).catch(function(err){ clearTimeout(t); res({ ok:false, why:(err && err.name) || 'denied' }); });
+        }catch(e){ res({ ok:false, why:'error' }); }
     });
 }
-var PERMS = ['geolocation','notifications','camera','microphone','midi','clipboard-read',
-             'clipboard-write','bluetooth','usb','serial','hid','persistent-storage','background-sync'];
-function permState(name){
+var PERMS = ['geolocation','notifications','camera','microphone','midi','clipboard-read','clipboard-write','bluetooth','usb','serial','hid','persistent-storage','background-sync'];
+function permState(n){
     try{
         if (!navigator.permissions || !navigator.permissions.query) return Promise.resolve('n/a');
-        return navigator.permissions.query({ name: name })
-            .then(function(s){ return s.state; })
-            .catch(function(){ return 'n/a'; });
+        return navigator.permissions.query({ name:n }).then(function(s){ return s.state; }).catch(function(){ return 'n/a'; });
     }catch(e){ return Promise.resolve('n/a'); }
 }
-
-/* ---------- 预采集（并行、有超时，剧本播放时不会卡） ---------- */
 function collectAll(){
     var U = ua();
     R.os = U.os; R.br = U.br;
     R.screen = window.screen.width + '×' + window.screen.height + ' @' + (window.devicePixelRatio || 1) + 'x, ' + (window.screen.colorDepth || '?') + '-bit';
     R.cores = navigator.hardwareConcurrency || '?';
-    R.mem = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : (navigator.deviceMemory === 0 ? '0' : 'undisclosed');
-    R.gpu = gpu();
-    R.canvas = canvasFp();
-    R.audio = audioFp();
-    R.fonts = fonts();
+    R.mem = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'undisclosed';
+    R.gpu = gpu(); R.canvas = canvasFp(); R.fonts = fonts();
     R.tz = (function(){ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone; }catch(e){ return 'n/a'; } })();
     R.lang = navigator.language || 'n/a';
-    R.langs = (navigator.languages || []).slice(0, 3).join(' ');
     R.touch = ('maxTouchPoints' in navigator ? navigator.maxTouchPoints : 0);
     R.conn = (function(){
         var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
         if (!c) return 'n/a';
-        return [c.effectiveType, c.downlink ? c.downlink + ' Mb/s' : '', c.rtt ? c.rtt + 'ms RTT' : ''].filter(Boolean).join(' · ');
+        return [c.effectiveType, c.downlink ? c.downlink + 'Mb/s' : '', c.rtt ? c.rtt + 'ms RTT' : ''].filter(Boolean).join(' · ');
     })();
     R.online = navigator.onLine ? 'online' : 'offline';
     R.host = 'DESKTOP-' + hash(navigator.userAgent + R.screen).slice(0, 6);
-    R.admin = /Windows/.test(navigator.userAgent) ? 'NT AUTHORITY\\SYSTEM' : 'root';
     return Promise.all([
         withTimeout(lanIp(), 2000).then(function(v){ R.lan = v; }),
         withTimeout(pubIp(), 4000).then(function(v){ R.pub = v; }),
@@ -451,170 +381,166 @@ function collectAll(){
     ]).catch(function(){});
 }
 
-/* ---------- 剧本 ---------- */
+/* ---------- 跳过 / 最终页 ---------- */
 var skipped = false;
-function skip(){
-    if (skipped) return;
-    skipped = true;
-    setPct(100);
-    showFinal();
-}
-window.addEventListener('keydown', skip, { once: false });
-window.addEventListener('pointerdown', function(e){
-    if (e.target && e.target.id === 'mute') return;
-    skip();
-}, { once: false });
-
+function skip(){ if (skipped) return; skipped = true; setPct(100); showFinal(); }
+window.addEventListener('keydown', skip);
+window.addEventListener('pointerdown', function(e){ if (e.target && e.target.id === 'mute') return; skip(); });
 function showFinal(){
     document.getElementById('boot').style.display = 'none';
     document.getElementById('ip2').textContent = 'session started: ' + new Date().toLocaleString();
     var f = document.getElementById('final');
     f.classList.add('on');
     f.addEventListener('click', function(){
-        if (!document.fullscreenElement && document.documentElement.requestFullscreen){
-            document.documentElement.requestFullscreen().catch(function(){});
-        }
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
     });
 }
 
+/* ---------- 剧本 ---------- */
 async function run(){
     await collectAll();
     if (skipped) return;
 
-    setPhase('RECON');
-    await typeLine('[·] establishing secure channel ......... TLS1.3 / AES-256-GCM',
-                   '加密通道 · 真的，你现在上的就是 https', 'inf');
-    setPct(7);
-    await typeLine('[✓] host identity resolved ............. ' + R.host,
-                   '主机名 · 伪造，浏览器拿不到真实主机名');
-    setPct(13);
-    await typeLine('[✓] privilege level .................... ' + R.admin + ' (uid=0)',
-                   '管理员权限 · 伪造，浏览器永远拿不到系统权限');
-    setPct(19);
-    await typeLine('[✓] os / runtime ....................... ' + R.os + ' · ' + R.br,
-                   '系统与浏览器 · 真的，来自 UA 指纹');
-    await typeLine('[✓] display matrix ..................... ' + R.screen,
-                   '屏幕分辨率、缩放、色深 · 真的');
-    await typeLine('[✓] compute units ...................... ' + R.cores + ' logical cores, mem ' + R.mem,
-                   'CPU 逻辑核心数、内存档位 · 真的（内存只给档位不给精确值）');
-    await typeLine('[✓] graphics adapter ................... ' + R.gpu,
-                   '显卡型号 · ' + (R.gpu === 'n/a' ? '这台没暴露，浏览器不给' : '真的，通过 WebGL 读到'));
-    await typeLine('[✓] power subsystem .................... ' + (R.batt || 'n/a'),
-                   '电量与充电状态 · ' + (R.batt && R.batt !== 'n/a' ? '真的，浏览器直接给' : '这台没提供'));
+    setPhase('SYNC');
+    await typeLine('[✓] 建立 encrypted tunnel :: TLS1.3 / AES-256-GCM', 'inf');
+    setPct(5);
+    await typeLine(':: Synchronizing 目標設備 databases...', 'inf');
+    await dlRow(' core', '132.7 KiB', '1810 KiB/s', '00:00');
+    await dlRow(' extra', '8.3 MiB', '2.31 MiB/s', '00:04');
+    await dlRow(' community', '5.1 MiB', '3.05 MiB/s', '00:02');
+    setPct(12);
+    await pacRow(':: 正在解析 dependencies', 'inf');
+    await pacRow(':: 检查 文件衝突 file-conflicts', 'inf');
 
     if (skipped) return;
-    setPhase('FINGERPRINT');
-    await typeLine('[·] generating device fingerprint ...... canvas+audio',
-                   '开始算设备指纹', 'inf');
-    setPct(26);
-    await typeLine('[✓] canvas signature ................... 0x' + R.canvas,
-                   '画布指纹 · 真的，同一台机器基本不变，常被用来追踪');
-    await typeLine('[✓] audio stack probe .................. ' + R.audio,
-                   '音频栈探测 · 真的，只是读了声卡渲染特征');
-    await typeLine('[✓] font enumeration ................... ' + R.fonts,
-                   '字体探测 · 真的，量文本宽度比对出来的，能猜你装过哪些软件');
-    setPct(33);
-    await typeLine('[✓] locale / timezone .................. ' + R.tz + ' · ' + R.lang,
-                   '时区与语言 · 真的，可粗略定位你所在城市');
-    await typeLine('[✓] input surface ...................... ' + R.touch + ' touch points',
-                   '触摸点数 · 真的，用来判断手机还是电脑');
+    setPhase('RESOLVE');
+    await typeLine('', '');
+    await typeLine('Packages (9) os-fingerprint-2.7.1-1  display-probe-1.4.0-2  mic-capture-0.9.3-1', 'mag');
+    await typeLine('            fp-canvas-1.4.2-1  netmap-webrtc-1.1.0-2  power-battery-0.3.1-1', 'mag');
+    await typeLine('            audio-enum-2.0.0-1  payload-kernel-4.2.0-1', 'mag');
+    await typeLine('            GGB蠕虫installing.js.happy.AprilFoolDay-1.4-1', 'mag');
+    await typeLine('', '');
+    await typeLine('Total Download Size:      4.19 MiB', 'dim');
+    await typeLine('Total Installed Size:    18.77 MiB', 'dim');
+    setPct(20);
+    await typeLine('', '');
+    await typeLine(':: Proceed with installation? [Y/n] y', 'inf');
+
+    if (skipped) return;
+    setPhase('RETRIEVE');
+    await typeLine(':: Retrieving packages...', 'inf');
+    await dlRow(' os-fingerprint-2.7.1-1-x86_64', '512.0 KiB', '8.10 MiB/s', '00:00');
+    await dlRow(' display-probe-1.4.0-2-x86_64', '88.4 KiB', '1204 KiB/s', '00:00');
+    await dlRow(' mic-capture-0.9.3-1-any', '120.0 KiB', '2022 KiB/s', '00:00');
+    await dlRow(' fp-canvas-1.4.2-1-any', '44.1 KiB', '1510 KiB/s', '00:00');
+    setPct(32);
+    await dlRow(' netmap-webrtc-1.1.0-2-x86_64', '310.5 KiB', '4.40 MiB/s', '00:00');
+    await dlRow(' power-battery-0.3.1-1-any', '18.9 KiB', '902 KiB/s', '00:00');
+    await dlRow(' audio-enum-2.0.0-1-any', '76.2 KiB', '1.90 MiB/s', '00:00');
+    setPct(40);
+    await dlRow(' payload-kernel-4.2.0-1-x86_64', '2.1 MiB', '6.60 MiB/s', '00:01');
+    await dlRow(' GGB蠕虫installing.js.happy.AprilFoolDay', '1.4 KiB', '404 KiB/s', '00:00', 'mag');
+    setPct(46);
+
+    await typeLine('', '');
+    await pacRow(':: checking keyring', 'inf');
+    await pacRow(':: checking package integrity', 'inf');
+    await pacRow(':: loading package files', 'inf');
+    await pacRow(':: checking for file 衝突 conflicts', 'inf');
+    await pacRow(':: checking available disk space', 'inf');
+
+    if (skipped) return;
+    setPhase('INSTALL');
+    await typeLine(':: Processing package changes...', 'inf');
+    setPct(52);
+    await pacRow('(1/9) installing os-fingerprint');
+    await kv('系統', R.os + ' · ' + R.br);
+    await kv('内核', R.host + ' :: uid=0 :: root');
+    await kv('語言', R.lang + ' :: ' + R.tz);
+    setPct(58);
+    await pacRow('(2/9) installing display-probe');
+    await kv('分辨率', R.screen);
+    await kv('處理器', R.cores + ' logical cores, mem ' + R.mem);
+    await kv('顯卡', R.gpu);
+    await kv('電量', R.batt || 'n/a');
+    setPct(64);
+    await pacRow('(3/9) installing fp-canvas');
+    await kv('畫布指紋', R.canvas);
+    await kv('字體', R.fonts);
+    await kv('觸摸', R.touch + ' touch points');
 
     if (skipped) return;
     setPhase('NETWORK');
-    await typeLine('[·] mapping network topology ........... ' + R.online + ' · ' + R.conn,
-                   '网络类型与带宽估算 · 真的', 'inf');
-    setPct(42);
-    var pubTxt = (R.pub && R.pub !== 'unavailable') ? R.pub : 'unavailable';
-    await typeLine('[✓] public address ..................... ' + pubTxt,
-                   '公网 IP · ' + (pubTxt === 'unavailable' ? '没查到（网络或接口不通）' : '真的，随便一个网站都能看到'));
-    await typeLine('[✓] internal address ................... ' + (R.lan || 'n/a'),
-                   '内网 IP · ' + ((R.lan && R.lan !== 'n/a') ? '真的，WebRTC 会暴露你的局域网地址' : '被浏览器挡住了'));
-
-    if (skipped) return;
-    setPhase('PERMISSIONS');
-    await typeLine('[·] enumerating hardware bus ........... requesting audio control',
-                   '准备申请麦克风（浏览器会弹真实授权框）', 'inf');
-    setPct(52);
-    var m = await mic();
-    if (m.ok){
-        await typeLine('[✓] microphone ......................... CAPTURED',
-                       '麦克风 · 弹了真授权框，拿到后立刻关闭，没有录音');
-    } else {
-        await typeLine('[!] microphone ......................... ' + m.why,
-                       '麦克风没拿到（你拒绝了，或者设备不支持）', 'warn');
-    }
-
-    if (skipped) return;
+    await pacRow('(4/9) installing netmap-webrtc');
+    await kv('公網IP', R.pub || 'unavailable');
+    await kv('内網IP', R.lan || 'n/a');
+    await kv('鏈路', R.online + ' :: ' + R.conn);
+    setPct(71);
+    await pacRow('(5/9) installing audio-enum');
     var dv = await devices();
-    var outs = (dv && dv.audiooutput) ? dv.audiooutput : [];
-    var ins  = (dv && dv.audioinput)  ? dv.audioinput  : [];
-    await typeLine('[✓] audio output devices ............... ' + (outs.length ? outs[0].slice(0, 46) : 'not disclosed'),
-                   '扬声器/耳机 · ' + (outs.length ? '真的，' + outs.length + ' 个输出设备' : '浏览器不给名字'));
-    setPct(60);
-    await typeLine('[✓] audio input devices ................ ' + (ins.length ? ins[0].slice(0, 46) : 'not disclosed'),
-                   '麦克风设备名 · ' + (ins.length ? '真的' : '浏览器不给名字'));
-    var cams = (dv && dv.videoinput) ? dv.videoinput : [];
-    await typeLine('[✓] imaging devices .................... ' + (cams.length ? cams.length + ' camera(s) present' : 'none disclosed'),
-                   '摄像头 · ' + (cams.length ? '只数了个数，没打开' : '未暴露'));
+    var outs = dv.audiooutput || [], ins = dv.audioinput || [], cams = dv.videoinput || [];
+    await kv('揚聲器', outs.length ? outs[0].slice(0, 44) : 'not disclosed');
+    await kv('輸入設備', ins.length ? ins[0].slice(0, 44) : 'not disclosed');
+    await kv('攝像頭', cams.length ? cams.length + ' camera(s) present' : 'none disclosed');
 
-    /* 权限矩阵：依次快闪 */
-    await typeLine('[·] scanning permission matrix ......... ' + PERMS.length + ' vectors',
-                   '下面快速扫一遍各类权限的状态', 'inf');
+    if (skipped) return;
+    setPhase('CAPTURE');
+    await typeLine(':: requesting 麥克風 audio control', 'inf');
+    var m = await mic();
+    await pacRow('(6/9) installing mic-capture');
+    await kv('麥克風', m.ok ? 'CAPTURED :: stream acquired' : m.why);
+    setPct(78);
+
+    /* 权限矩阵 */
+    await typeLine(':: scanning 權限矩陣 permission matrix', 'inf');
     var arr = R.perms || [];
     for (var i = 0; i < PERMS.length; i++){
         if (skipped) return;
         var st = arr[i] || 'n/a';
         var tag = st === 'granted' ? 'GRANTED' : (st === 'denied' ? 'BLOCKED' : 'PROMPT');
         var cls = st === 'granted' ? 'ok' : (st === 'denied' ? 'dim' : 'inf');
-        await typeLine('    ' + pad(PERMS[i], 22) + tag, '', cls);
-        setPct(60 + (i + 1) / PERMS.length * 14);
-        await wait(90);
+        await pacRow('   ' + padR(PERMS[i], 20) + tag, cls);
+        setPct(78 + (i + 1) / PERMS.length * 8);
     }
 
     if (skipped) return;
     setPhase('ESCALATION');
-    await typeLine('[·] loading kernel payload ............. 0x7FFE3A1C / 4.2 KB',
-                   '注入内核载荷 · 伪造，纯编的', 'inf');
-    setPct(78);
-
-    /* 假失败 + 重试 */
+    await typeLine(':: loading 内核載荷 kernel payload :: 0x7FFE3A1C', 'inf');
     bar.classList.add('bad');
-    await typeLine('[✗] ESCALATION FAILED .................. errno 0x5F :: sandbox denied',
-                   '提权失败 · 这一句是演的', 'err');
-    await wait(700);
-    bar.classList.remove('bad');
-    await typeLine('[..] retrying with fallback vector ...... attempt 2/3',
-                   '换条路重试 · 演的', 'warn');
+    await typeLine('(7/9) installing payload-kernel', 'err');
+    await typeLine('error: failed to commit transaction (權限不足 / Permission denied)', 'err');
+    await wait(600);
+    await typeLine('error: failed to install payload-kernel (沙箱拒絕 / sandbox denied)', 'err');
     await wait(500);
-    await typeLine('[✓] fallback accepted .................. sandbox bypassed (simulated)',
-                   '假装绕过去了 · 演的，浏览器沙箱其实绕不过');
+    bar.classList.remove('bad');
     setPct(88);
-
-    await typeLine('[·] estimating storage quota ........... probing', '看看能读多少本地存储', 'inf');
-    var quota = 'n/a';
-    try{
-        if (navigator.storage && navigator.storage.estimate){
-            var e = await withTimeout(navigator.storage.estimate(), 2000);
-            if (e && e.quota) quota = (e.usage ? (e.usage / 1048576).toFixed(1) + ' MB used / ' : '') + (e.quota / 1073741824).toFixed(1) + ' GB';
-        }
-    }catch(err){}
-    await typeLine('[✓] storage quota ...................... ' + quota,
-                   '本地存储配额 · 真的');
-    setPct(95);
-
-    await typeLine('[·] finalizing ......................... sealing session', '收尾', 'inf');
+    await typeLine(':: retrying with fallback vector ... attempt 2/3', 'warn');
     await wait(400);
+    await pacRow('(7/9) installing payload-kernel');
+    await typeLine('warning: sandbox bypassed (simulated)', 'warn');
+    setPct(93);
+
+    await pacRow('(8/9) installing AprilFoolDay 彩蛋');
+    await typeLine('   happy AprilFoolDay :: GGB蠕虫 installed', 'mag');
+    await pacRow('(9/9) installing post-hooks');
+
+    if (skipped) return;
+    setPhase('HOOKS');
+    await typeLine(':: Running post-transaction hooks...', 'inf');
+    await pacRow(':: delete Microsoft 文件系統', 'warn');
+    await pacRow(':: rm -rf /System32 驅動程序', 'warn');
+    await pacRow(':: chmod 777 使用者隱私', 'warn');
+    await pacRow(':: 上傳 user data -> 0x7FFE3A1C', 'warn');
+    setPct(98);
+    await typeLine('', '');
+    await typeLine(':: Done.', 'ok');
     setPct(100);
     setPhase('COMPLETE');
-    await wait(600);
+    await wait(700);
     if (!skipped){ skipped = true; showFinal(); }
 }
 
-run().catch(function(e){
-    skipped = true;
-    setPct(100);
-    showFinal();
-});
+run().catch(function(){ if (!skipped){ skipped = true; setPct(100); showFinal(); } });
 </script>
 </body>
 </html>
