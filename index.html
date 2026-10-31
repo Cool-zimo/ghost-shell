@@ -115,13 +115,24 @@
     .glitch { font-size: 72px; font-weight: bold; color: #ff0000; text-shadow: 0 0 10px #ff0000, 0 0 40px #ff0000; animation: flicker .4s infinite; }
     @keyframes flicker { 0%,100%{opacity:1;} 50%{opacity:.82;} 25%{transform:skewX(2deg);} 75%{transform:skewX(-2deg);} }
     .sub { color: #00ff00; font-size: 20px; margin-top: 30px; text-shadow: 0 0 5px #00ff00; }
+    /* 中文标题：等宽 + 字距，配合 glitch 抖动 */
+    .glitch { font-family: inherit; letter-spacing: .12em; font-size: 62px; }
+    .sub2 { color: #00ff00; font-size: 15px; margin-top: 26px; text-shadow: 0 0 5px #00ff00; letter-spacing: .22em; }
     .ip2 { color: #888; font-size: 14px; margin-top: 20px; }
+    .ip3 { color: #5a5a5a; font-size: 12px; margin-top: 8px; letter-spacing: .1em; }
     .hint { position: fixed; bottom: 14px; left: 0; width: 100%; text-align: center; color: #555; font-size: 12px; }
     @media (max-width: 620px) {
         body { font-size: 10.5px; }
-        .glitch { font-size: 40px; }
+        .glitch { font-size: 34px; }
         .sub { font-size: 15px; margin-top: 20px; }
+        .sub2 { font-size: 11.5px; letter-spacing: .12em; margin-top: 20px; }
+        .ip3 { font-size: 10.5px; }
     }
+    /* 手工敲命令行：提示符 / 命令 / 光标 */
+    .pr { color: #00c233; }
+    .ty { color: #eafff0; }
+    .cur { display: inline-block; width: .62em; background: var(--g); color: #050505; animation: curblink 1s steps(1) infinite; }
+    @keyframes curblink { 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
 </style>
 </head>
 <body>
@@ -195,10 +206,11 @@
 </div>
 
 <div id="final">
-    <div class="glitch">YOU GOT HACKED</div>
-    <div class="sub">system compromised // access granted</div>
+    <div class="glitch" data-t="你已被入侵">你已被入侵</div>
+    <div class="sub2">系統已淪陷 // 權限已獲取 // root@localhost</div>
     <div class="ip2" id="ip2"></div>
-    <div class="hint">press ESC to exit fullscreen &middot; close the tab to leave</div>
+    <div class="ip3" id="ip3"></div>
+    <div class="hint">按 ESC 退出全屏 · 直接关闭标签页即可离开</div>
 </div>
 
 <script>
@@ -321,6 +333,82 @@ function typeLine(text, cls){
         })();
     });
 }
+/* ------------------------------------------------------------------
+   真人打字模拟
+   真实感来自三件事：速度忽快忽慢、会打错、打错了要退格重打。
+   固定速度、从不失误的"打字"一眼假。
+------------------------------------------------------------------- */
+var NEAR = {a:'sqwz',b:'vgnh',c:'xdfv',d:'sfec',e:'wrd',f:'dgrv',g:'fhbt',h:'gjyn',
+            i:'uok',j:'hknm',k:'jlmo',l:'kop',m:'njk',n:'bmh',o:'ipl',p:'ol',
+            q:'wa',r:'etf',s:'adwx',t:'ryg',u:'yij',v:'cbg',w:'qeas',x:'zdc',
+            y:'tuh',z:'xsa','/':'.l','.':'/,','-':'_','_':'-','|':'\\','\\':'|',
+            '1':'2q','2':'1w3','3':'2e4','4':'3r5','5':'4t6','6':'5y7','7':'6u8',
+            '8':'7i9','9':'8o0','0':'9p'};
+/* 已敲过的字符临时加速：连续肌肉记忆比重新找键快 */
+function humanDelay(ch, prev, base){
+    var d = base * (0.5 + Math.random() * 0.85);
+    if ('/.-_@|:\\$#!*'.indexOf(ch) >= 0) d *= 1.55;
+    else if (ch >= '0' && ch <= '9') d *= 1.2;
+    if (ch === ' ') d *= 1.3;
+    if (prev && prev === ch) d *= 0.72;
+    if (Math.random() < 0.03) d += 170 + Math.random() * 280;   /* 想一下 */
+    return d;
+}
+/* 逐字符敲出 text；prompt 前缀不参与打字；返回行元素 */
+async function humanType(text, opts){
+    opts = opts || {};
+    var ln = mk(opts.cls || 'ok');
+    var ps = document.createElement('span'); ps.className = 'pr';
+    var ts = document.createElement('span'); ts.className = 'ty';
+    var cu = document.createElement('span'); cu.className = 'cur'; cu.textContent = ' ';
+    ln.appendChild(ps); ln.appendChild(ts); ln.appendChild(cu);
+    ps.textContent = opts.prompt || '';
+    var base = opts.speed || 58;
+    var typo = opts.typo != null ? opts.typo : 0.1;
+    var i = 0, prev = '';
+    while (i < text.length){
+        if (skipped){ ts.textContent = text; cu.remove(); scroll(); return ln; }
+        var ch = text.charAt(i);
+        var d = humanDelay(ch, prev, base);
+        /* 手滑：多打一个相邻键，然后反应过来退格 */
+        if (typo > 0 && Math.random() < typo && /[a-z0-9\/.\-_|]/.test(ch)){
+            var cand = NEAR[ch];
+            if (cand){
+                var wrong = cand.charAt(Math.floor(Math.random() * cand.length));
+                if (wrong && wrong !== ch){
+                    ts.textContent += wrong; beep(); scroll();
+                    await wait(d * 0.8);
+                    await wait(130 + Math.random() * 230);      /* 发现打错的停顿 */
+                    ts.textContent = ts.textContent.slice(0, -1); beep(); scroll();
+                    await wait(65 + Math.random() * 95);        /* 退格比打字快 */
+                }
+            }
+        }
+        ts.textContent += ch; beep(); scroll();
+        await wait(d);
+        prev = ch; i++;
+    }
+    /* 敲完后光标再闪一下再消失，像按了回车 */
+    await wait(160 + Math.random() * 260);
+    cu.remove();
+    return ln;
+}
+/* 机器回显：整行瞬间出现（真实终端里输出不是人敲出来的） */
+function out(text, cls){ return typeLine(text, cls); }
+/* 完整一条命令：提示符打字 → 回车停顿 → 输出逐行 */
+async function cmd(text, outs, opts){
+    opts = opts || {};
+    await humanType(text, {prompt: opts.prompt, cls: opts.cls || 'ok',
+                           speed: opts.speed, typo: opts.typo});
+    await wait(opts.latency != null ? opts.latency : 150 + Math.random() * 220);
+    if (!outs) return;
+    for (var j = 0; j < outs.length; j++){
+        if (skipped) return;
+        await out(outs[j][0], outs[j][1]);
+        await wait(35 + Math.random() * 90);
+    }
+}
+
 /* pacman 式进度块 */
 function barStr(i){
     return '[' + rep('#', i) + rep('-', BARW - i) + '] ' + padL(Math.round(i / BARW * 100), 3) + '%';
@@ -847,7 +935,9 @@ function showFinal(){
     clearInterval(LOCK.timer); clearInterval(LOCK.clock);
     document.getElementById('boot').style.display = 'none';
     document.getElementById('lock').classList.remove('on');
-    document.getElementById('ip2').textContent = 'session started: ' + new Date().toLocaleString();
+    document.getElementById('ip2').textContent = '会话建立时间：' + new Date().toLocaleString('zh-CN');
+    document.getElementById('ip3').textContent = 'session :: ' + (R.host || 'localhost') +
+        ' · uid=0 · ' + (R.os || 'unknown');
     var f = document.getElementById('final');
     f.classList.add('on');
     f.addEventListener('click', function(){
@@ -859,99 +949,159 @@ function showFinal(){
 async function run(){
     await collectAll();
     if (skipped) return;
+    var H = R.host;
+    var P1 = 'root@kali:~# ', P2 = 'root@' + H + ':~# ';
 
-    setPhase('SYNC');
+    /* ---------- 第一幕：蠕虫落地（pacman） ---------- */
+    setPhase('STAGE-1 DELIVERY');
     await typeLine('[✓] 建立 encrypted tunnel :: TLS1.3 / AES-256-GCM', 'inf');
-    setPct(5);
+    setPct(4);
     await typeLine(':: Synchronizing 目標設備 databases...', 'inf');
     await dlRow(' core', '132.7 KiB', '1810 KiB/s', '00:00');
     await dlRow(' extra', '8.3 MiB', '2.31 MiB/s', '00:04');
-    await dlRow(' community', '5.1 MiB', '3.05 MiB/s', '00:02');
-    setPct(12);
+    setPct(9);
     await pacRow(':: 正在解析 dependencies', 'inf');
-    await pacRow(':: 检查 文件衝突 file-conflicts', 'inf');
-
-    if (skipped) return;
-    setPhase('RESOLVE');
+    await pacRow(':: 检查 file-conflicts', 'inf');
     await typeLine('', '');
-    await typeLine('Packages (9) os-fingerprint-2.7.1-1  display-probe-1.4.0-2  mic-capture-0.9.3-1', 'mag');
-    await typeLine('            fp-canvas-1.4.2-1  netmap-webrtc-1.1.0-2  power-battery-0.3.1-1', 'mag');
-    await typeLine('            audio-enum-2.0.0-1  payload-kernel-4.2.0-1', 'mag');
-    await typeLine('            GGB蠕虫installing.js.happy.AprilFoolDay-1.4-1', 'mag');
+    await typeLine('Packages (3) GGB蠕虫installing.js.happy.AprilFoolDay-1.4-1', 'mag');
+    await typeLine('            ggb-loader-0.8.2-1  c2-beacon-2.1.0-1', 'mag');
     await typeLine('', '');
-    await typeLine('Total Download Size:      4.19 MiB', 'dim');
-    await typeLine('Total Installed Size:    18.77 MiB', 'dim');
-    setPct(20);
-    await typeLine('', '');
+    await typeLine('Total Download Size:      1.42 MiB', 'dim');
+    setPct(14);
     await typeLine(':: Proceed with installation? [Y/n] y', 'inf');
-
-    if (skipped) return;
-    setPhase('RETRIEVE');
     await typeLine(':: Retrieving packages...', 'inf');
-    await dlRow(' os-fingerprint-2.7.1-1-x86_64', '512.0 KiB', '8.10 MiB/s', '00:00');
-    await dlRow(' display-probe-1.4.0-2-x86_64', '88.4 KiB', '1204 KiB/s', '00:00');
-    await dlRow(' mic-capture-0.9.3-1-any', '120.0 KiB', '2022 KiB/s', '00:00');
-    await dlRow(' fp-canvas-1.4.2-1-any', '44.1 KiB', '1510 KiB/s', '00:00');
-    setPct(32);
-    await dlRow(' netmap-webrtc-1.1.0-2-x86_64', '310.5 KiB', '4.40 MiB/s', '00:00');
-    await dlRow(' power-battery-0.3.1-1-any', '18.9 KiB', '902 KiB/s', '00:00');
-    await dlRow(' audio-enum-2.0.0-1-any', '76.2 KiB', '1.90 MiB/s', '00:00');
-    setPct(40);
-    await dlRow(' payload-kernel-4.2.0-1-x86_64', '2.1 MiB', '6.60 MiB/s', '00:01');
     await dlRow(' GGB蠕虫installing.js.happy.AprilFoolDay', '1.4 KiB', '404 KiB/s', '00:00', 'mag');
-    setPct(46);
+    await dlRow(' ggb-loader-0.8.2-1-x86_64', '910.2 KiB', '5.10 MiB/s', '00:00');
+    await dlRow(' c2-beacon-2.1.0-1-x86_64', '308.8 KiB', '2.40 MiB/s', '00:00');
+    setPct(20);
+    await pacRow('(1/3) installing GGB蠕虫');
+    await pacRow('(2/3) installing ggb-loader');
+    await pacRow('(3/3) installing c2-beacon');
+    await typeLine(':: Done.', 'ok');
+    setPct(25);
 
+    if (skipped) return;
+    /* ---------- 第二幕：回连 + SSH 登陆 ---------- */
+    setPhase('STAGE-2 BREACH');
+    await wait(400);
     await typeLine('', '');
-    await pacRow(':: checking keyring', 'inf');
-    await pacRow(':: checking package integrity', 'inf');
-    await pacRow(':: loading package files', 'inf');
-    await pacRow(':: checking for file 衝突 conflicts', 'inf');
-    await pacRow(':: checking available disk space', 'inf');
+    await typeLine('[*] 蠕虫已落地 :: 正在回连 C2 控制端', 'inf');
+    await wait(300);
+    await typeLine('[✓] beacon 已上线 :: 45.13.' + (R.lan ? R.lan.split('.').slice(2).join('.') : '77.4') + ':8443', 'ok');
+    await wait(350);
+    var tgt = R.lan || '192.168.1.104';
+    await cmd('ssh -o StrictHostKeyChecking=no root@' + tgt, [
+        ["The authenticity of host '" + tgt + " (" + tgt + ")' can't be established.", 'warn'],
+        ['ED25519 key fingerprint is SHA256:' + (R.canvas || 'a1b2c3').slice(0, 32) + '.', 'warn'],
+        ["Are you sure you want to continue connecting (yes/no/[fingerprint])? yes", ''],
+        ['Warning: Permanently added ' + tgt + ' (ED25519) to the list of known hosts.', 'dim']
+    ], {prompt: P1, speed: 52, typo: 0.05});
+    setPct(31);
 
     if (skipped) return;
-    setPhase('INSTALL');
-    await typeLine(':: Processing package changes...', 'inf');
-    setPct(52);
-    await pacRow('(1/9) installing os-fingerprint');
-    await kv('系統', R.os + ' · ' + R.br);
-    await kv('内核', R.host + ' :: uid=0 :: root');
-    await kv('語言', R.lang + ' :: ' + R.tz);
-    setPct(58);
-    await pacRow('(2/9) installing display-probe');
-    await kv('分辨率', R.screen);
-    await kv('處理器', R.cores + ' logical cores, mem ' + R.mem);
-    await kv('顯卡', R.gpu);
-    await kv('電量', R.batt || 'n/a');
-    setPct(64);
-    await pacRow('(3/9) installing fp-canvas');
-    await kv('畫布指紋', R.canvas);
-    await kv('字體', R.fonts);
-    await kv('觸摸', R.touch + ' touch points');
+    /* 密码：不回显，敲成星号 */
+    var pwln = mk('ok');
+    var pwps = document.createElement('span'); pwps.className = 'pr'; pwps.textContent = "root@" + tgt + "'s password: ";
+    var pwts = document.createElement('span'); pwts.className = 'ty';
+    var pwcu = document.createElement('span'); pwcu.className = 'cur'; pwcu.textContent = ' ';
+    pwln.appendChild(pwps); pwln.appendChild(pwts); pwln.appendChild(pwcu);
+    var pw = 'P@ssw0rd!2024';
+    for (var pi = 0; pi < pw.length; pi++){
+        if (skipped) break;
+        pwts.textContent += '*'; beep(); scroll();
+        await wait(70 + Math.random() * 110);
+    }
+    await wait(300); pwcu.remove();
+    await out('', '');
+    await out('Linux ' + H + ' 6.1.0-18-amd64 #1 SMP PREEMPT_DYNAMIC x86_64', 'dim');
+    await out('Last login: ' + new Date(Date.now() - 86400000).toUTCString() + ' from 45.13.77.4', 'dim');
+    await out('', '');
+    setPct(35);
 
     if (skipped) return;
-    setPhase('NETWORK');
-    await pacRow('(4/9) installing netmap-webrtc');
-    await kv('公網IP', R.pub || 'unavailable');
-    await kv('内網IP', R.lan || 'n/a');
-    await kv('鏈路', R.online + ' :: ' + R.conn);
-    setPct(71);
-    await pacRow('(5/9) installing audio-enum');
+    /* ---------- 第三幕：入侵者手工敲命令 ---------- */
+    setPhase('STAGE-3 RECON');
+    await wait(500);
+    await cmd('whoami', [['root', 'ok']], {prompt: P2, speed: 46});
+    await cmd('id', [['uid=0(root) gid=0(root) groups=0(root),1(daemon),44(video)', 'ok']], {prompt: P2, speed: 54});
+    await cmd('uname -a', [['Linux ' + H + ' 6.1.0-18-amd64 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux', '']
+        ], {prompt: P2, speed: 50});
+    setPct(41);
+    /* 打错：cat /etc/passwrd → 退格 → passwd */
+    await cmd('cat /etc/passwd', [
+        ['root:x:0:0:root:/root:/bin/bash', ''],
+        ['daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin', 'dim'],
+        ['coolzimo:x:1000:1000:Cool Zimo:/home/coolzimo:/bin/bash', 'inf']
+    ], {prompt: P2, speed: 58, typo: 0.16});
+    await cmd('ip -br addr show', [
+        ['lo               UNKNOWN        127.0.0.1/8', 'dim'],
+        ['eth0             UP            ' + tgt + '/24', ''],
+        ['wlan0            UP            ' + (R.lan || '10.0.0.7') + '/20', '']
+    ], {prompt: P2, speed: 56});
+    setPct(48);
+
+    if (skipped) return;
+    await cmd('ls -la /home/coolzimo/', [
+        ['drwxr-xr-x  2 coolzimo coolzimo  4096 桌面', ''],
+        ['drwxr-xr-x  3 coolzimo coolzimo  4096 文档', ''],
+        ['drwxr-xr-x  4 coolzimo coolzimo  4096 学习', 'inf'],
+        ['-rw-------  1 coolzimo coolzimo 12288 .bash_history', 'warn']
+    ], {prompt: P2, speed: 60, typo: 0.1});
+    await cmd('head -20 ~/.bash_history', [
+        ['python3 drive.py --upload 学习/', 'dim'],
+        ['git push origin main', 'dim'],
+        ['sudo apt install neofetch', 'dim'],
+        ['ssh root@' + tgt, 'warn'],
+        ['cat ~/.ssh/id_ed25519', 'err']
+    ], {prompt: P2, speed: 62});
+    setPct(55);
+
+    if (skipped) return;
+    setPhase('STAGE-4 EXFIL');
+    await wait(400);
+    await cmd('./ggb --probe browser', [
+        ['[*] 注入 renderer process :: pid ' + (4412 + Math.floor(Math.random() * 800)), 'inf'],
+        ['[*] 读取渲染进程内存 :: sandbox escape (simulated)', 'warn'],
+        ['', ''],
+        ['    系統    :: ' + R.os + ' · ' + R.br, ''],
+        ['    分辨率  :: ' + R.screen, ''],
+        ['    處理器  :: ' + R.cores + ' logical cores, mem ' + R.mem, ''],
+        ['    顯卡    :: ' + R.gpu, ''],
+        ['    電量    :: ' + (R.batt || 'n/a'), '']
+    ], {prompt: P2, speed: 58, latency: 420});
+    setPct(62);
+    await cmd('./ggb --probe fingerprint', [
+        ['    畫布指紋 :: ' + R.canvas, ''],
+        ['    字體    :: ' + R.fonts, ''],
+        ['    觸摸    :: ' + R.touch + ' touch points', ''],
+        ['    語言    :: ' + R.lang + ' :: ' + R.tz, '']
+    ], {prompt: P2, speed: 60, latency: 360});
+    setPct(68);
+
+    if (skipped) return;
+    await cmd('./ggb --probe network', [
+        ['    公網IP  :: ' + (R.pub || 'unavailable'), 'inf'],
+        ['    内網IP  :: ' + (R.lan || 'n/a'), 'inf'],
+        ['    鏈路    :: ' + R.online + ' :: ' + R.conn, '']
+    ], {prompt: P2, speed: 62, latency: 380});
     var dv = await devices();
-    var outs = dv.audiooutput || [], ins = dv.audioinput || [], cams = dv.videoinput || [];
-    await kv('揚聲器', outs.length ? outs[0].slice(0, 44) : 'not disclosed');
-    await kv('輸入設備', ins.length ? ins[0].slice(0, 44) : 'not disclosed');
-    await kv('攝像頭', cams.length ? cams.length + ' camera(s) present' : 'none disclosed');
+    var outs2 = dv.audiooutput || [], ins2 = dv.audioinput || [], cams = dv.videoinput || [];
+    setPct(74);
+    await cmd('./ggb --probe av', [
+        ['    揚聲器  :: ' + (outs2.length ? outs2[0].slice(0, 42) : 'not disclosed'), ''],
+        ['    輸入設備 :: ' + (ins2.length ? ins2[0].slice(0, 42) : 'not disclosed'), ''],
+        ['    攝像頭  :: ' + (cams.length ? cams.length + ' camera(s) present' : 'none disclosed'), '']
+    ], {prompt: P2, speed: 64, latency: 340});
 
     if (skipped) return;
-    setPhase('CAPTURE');
+    setPhase('STAGE-5 CAPTURE');
     await typeLine(':: requesting 麥克風 audio control', 'inf');
     var m = await mic();
-    await pacRow('(6/9) installing mic-capture');
-    await kv('麥克風', m.ok ? 'CAPTURED :: stream acquired' : m.why);
-    setPct(78);
-
-    /* 权限矩阵 */
-    await typeLine(':: scanning 權限矩陣 permission matrix', 'inf');
+    await cmd('./ggb --capture mic', [
+        ['    ' + (m.ok ? 'CAPTURED :: stream acquired (已立即释放)' : m.why), m.ok ? 'ok' : 'dim']
+    ], {prompt: P2, speed: 60});
+    setPct(80);
+    await cmd('./ggb --probe perms', null, {prompt: P2, speed: 58});
     var arr = R.perms || [];
     for (var i = 0; i < PERMS.length; i++){
         if (skipped) return;
@@ -959,46 +1109,46 @@ async function run(){
         var tag = st === 'granted' ? 'GRANTED' : (st === 'denied' ? 'BLOCKED' : 'PROMPT');
         var cls = st === 'granted' ? 'ok' : (st === 'denied' ? 'dim' : 'inf');
         await pacRow('   ' + padR(PERMS[i], 20) + tag, cls);
-        setPct(78 + (i + 1) / PERMS.length * 8);
+        setPct(80 + (i + 1) / PERMS.length * 8);
     }
 
     if (skipped) return;
-    setPhase('ESCALATION');
-    await typeLine(':: loading 内核載荷 kernel payload :: 0x7FFE3A1C', 'inf');
-    bar.classList.add('bad');
-    await typeLine('(7/9) installing payload-kernel', 'err');
-    await typeLine('error: failed to commit transaction (權限不足 / Permission denied)', 'err');
-    await wait(600);
-    await typeLine('error: failed to install payload-kernel (沙箱拒絕 / sandbox denied)', 'err');
-    await wait(500);
-    bar.classList.remove('bad');
-    setPct(88);
-    await typeLine(':: retrying with fallback vector ... attempt 2/3', 'warn');
+    /* ---------- 第四幕：提权失败 → 重试 ---------- */
+    setPhase('STAGE-6 ESCALATION');
     await wait(400);
-    await pacRow('(7/9) installing payload-kernel');
-    await typeLine('warning: sandbox bypassed (simulated)', 'warn');
-    setPct(93);
-
-    await pacRow('(8/9) installing AprilFoolDay 彩蛋');
-    await typeLine('   happy AprilFoolDay :: GGB蠕虫 installed', 'mag');
-    await pacRow('(9/9) installing post-hooks');
+    bar.classList.add('bad');
+    await cmd('./ggb --privesc --payload 0x7FFE3A1C', [
+        ['[!] mmap: Operation not permitted', 'err'],
+        ['[!] failed to commit transaction (權限不足 / Permission denied)', 'err']
+    ], {prompt: P2, speed: 56, latency: 700});
+    await wait(500);
+    await typeLine('[!] 沙箱拒絕 :: sandbox denied', 'err');
+    await wait(400);
+    bar.classList.remove('bad');
+    setPct(92);
+    await cmd('./ggb --privesc --fallback cve-2024-1086 --retry 2/3', [
+        ['[*] 尝试 fallback 向量 ...', 'warn'],
+        ['[✓] sandbox bypassed (simulated)', 'warn']
+    ], {prompt: P2, speed: 64, latency: 900});
+    setPct(96);
 
     if (skipped) return;
-    setPhase('HOOKS');
+    /* ---------- 第五幕：破坏钩子 ---------- */
+    setPhase('STAGE-7 HOOKS');
     await typeLine(':: Running post-transaction hooks...', 'inf');
     await pacRow(':: delete Microsoft 文件系統', 'warn');
     await pacRow(':: rm -rf /System32 驅動程序', 'warn');
     await pacRow(':: chmod 777 使用者隱私', 'warn');
     await pacRow(':: 上傳 user data -> 0x7FFE3A1C', 'warn');
-    setPct(98);
+    await pacRow(':: happy AprilFoolDay :: GGB蠕虫 deployed', 'mag');
+    setPct(99);
     await typeLine('', '');
-    await typeLine(':: Done.', 'ok');
+    await cmd('exit', [['logout', 'dim'], ["Connection to " + tgt + " closed.", 'dim']], {prompt: P2, speed: 50});
     setPct(100);
     setPhase('COMPLETE');
     await wait(900);
     if (!skipped){ skipped = true; showLock(); }
 }
-
 run().catch(function(){ if (!skipped){ skipped = true; setPct(100); showLock(); } });
 </script>
 </body>
