@@ -36,7 +36,9 @@
     #mute { background: none; border: 1px solid #0d2a12; color: var(--gdim); font: inherit; font-size: 10px; padding: 1px 7px; border-radius: 3px; cursor: pointer; }
     #mute:hover { color: var(--g); border-color: var(--gdim); }
     #lines { flex: 1 1 auto; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 6px; }
-    .ln { white-space: pre; overflow: hidden; text-overflow: clip; }
+    /* flex 列布局下子项默认 flex-shrink:1，行一多就会被等比压扁（77行时行高被压到 9.6px）。
+       这里锁死不收缩，超出容器的老行从顶部溢出被裁掉，正是终端要的滚动效果 */
+    .ln { display: flex; align-items: baseline; white-space: pre; overflow: hidden; text-overflow: clip; flex: 0 0 auto; }
     .ok   { color: var(--g); }
     .inf  { color: var(--c); }
     .warn { color: var(--w); }
@@ -45,7 +47,10 @@
     .mag  { color: var(--m); }
     .k    { color: var(--c); }
     .v    { color: var(--g); }
-    .pb   { color: var(--gdim); }
+    /* 左栏吃掉剩余空间、超长自动省略；进度条固定在最右同一列，
+       不再靠 padR 补空格对齐（CJK 宽度各机型不同，补空格必然错位） */
+    .pn { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .pb { flex: 0 0 auto; padding-left: 8px; color: var(--gdim); }
     #barwrap { flex: 0 0 auto; padding: 8px 0 14px; }
     #barmeta { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--gdim); margin-bottom: 4px; }
     #phase { color: var(--c); letter-spacing: 1px; }
@@ -213,7 +218,21 @@ var T = parseFloat(new URLSearchParams(location.search).get('t')) || 1;
 function ms(v){ return Math.max(0, Math.round(v * T)); }
 function wait(v){ return new Promise(function(r){ setTimeout(r, ms(v)); }); }
 function rep(s, n){ var o = ''; for (var i = 0; i < n; i++) o += s; return o; }
-/* 显示宽度：CJK / 全角在等宽字体里占 2 列，按字符数补齐会让中英混排行歪掉 */
+/* 实测等宽网格：CJK 宽度随设备字体变化（实测过 0.875em / 1.0em / 1.2em 三种），
+   硬编码 2 列必然错位，所以开屏量一次真实比例 */
+var CJK_RATIO = 2;
+(function(){
+  var s = document.createElement('span');
+  s.style.cssText = 'position:absolute;left:-9999px;top:0;white-space:pre;visibility:hidden';
+  var cs = getComputedStyle(document.body);
+  s.style.fontFamily = cs.fontFamily; s.style.fontSize = cs.fontSize;
+  s.textContent = 'MMMMMMMMMM'; document.body.appendChild(s);
+  var lw = s.getBoundingClientRect().width / 10;
+  s.textContent = '中中中中中';
+  var cw = s.getBoundingClientRect().width / 5;
+  s.remove();
+  if (lw > 0.5 && cw > 0.5) CJK_RATIO = cw / lw;
+})();
 function dw(s){
     var n = 0;
     for (var i = 0; i < s.length; i++){
@@ -221,12 +240,12 @@ function dw(s){
         n += (c >= 0x1100 && (c <= 0x115f || (c >= 0x2e80 && c <= 0xa4cf && c !== 0x303f) ||
               (c >= 0xac00 && c <= 0xd7a3) || (c >= 0xf900 && c <= 0xfaff) ||
               (c >= 0xfe30 && c <= 0xfe6f) || (c >= 0xff00 && c <= 0xff60) ||
-              (c >= 0xffe0 && c <= 0xffe6))) ? 2 : 1;
+              (c >= 0xffe0 && c <= 0xffe6))) ? CJK_RATIO : 1;
     }
     return n;
 }
-function padR(s, n){ s = String(s); var d = dw(s); return d >= n ? s : s + rep(' ', n - d); }
-function padL(s, n){ s = String(s); var d = dw(s); return d >= n ? s : rep(' ', n - d) + s; }
+function padR(s, n){ s = String(s); var g = n - dw(s); return g <= 0 ? s : s + rep(' ', Math.round(g)); }
+function padL(s, n){ s = String(s); var g = n - dw(s); return g <= 0 ? s : rep(' ', Math.round(g)) + s; }
 
 var NARROW = window.innerWidth < 620;
 var BARW = NARROW ? 12 : 22;
