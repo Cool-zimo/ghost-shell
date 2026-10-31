@@ -56,6 +56,54 @@
     #bar.bad #fill { background: repeating-linear-gradient(90deg, var(--e) 0 8px, #b3201a 8px 16px); box-shadow: 0 0 12px rgba(255,59,48,.45); }
     #skip { text-align: center; color: #2e4a33; font-size: 10px; margin-top: 6px; }
 
+    /* ---------- 锁定屏（仿 APP） ---------- */
+    #lock { position: fixed; inset: 0; z-index: 4; display: none; align-items: center; justify-content: center; background: radial-gradient(120% 90% at 50% 0%, #1b0d0f 0%, #0a0a0b 60%); padding: 14px; overflow: auto; }
+    #lock.on { display: flex; }
+    .phone { width: 100%; max-width: 380px; background: #141416; border: 1px solid #2a2a2e; border-radius: 22px; overflow: hidden; box-shadow: 0 24px 70px rgba(0,0,0,.6); }
+    .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 9px 16px 6px; font-size: 10.5px; color: #8a8a92; letter-spacing: .5px; }
+    .statusbar .dots i { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: #8a8a92; margin-left: 2px; }
+    .statusbar .bat { display: inline-block; width: 15px; height: 8px; border: 1px solid #8a8a92; border-radius: 2px; position: relative; }
+    .statusbar .bat::after { content: ''; position: absolute; right: -3px; top: 2px; width: 2px; height: 4px; background: #8a8a92; border-radius: 0 1px 1px 0; }
+    .lockbody { padding: 4px 20px 20px; text-align: center; }
+    .lockicon { width: 54px; height: 54px; margin: 6px auto 12px; border-radius: 50%; background: rgba(255,59,48,.12); border: 1px solid rgba(255,59,48,.35); display: flex; align-items: center; justify-content: center; }
+    .lockicon svg { width: 24px; height: 24px; }
+    .lockbody h1 { font-size: 17px; color: #fff; font-weight: 600; letter-spacing: .3px; font-family: inherit; }
+    .lsub { color: #9a9aa2; font-size: 11.5px; line-height: 1.65; margin-top: 8px; }
+    .fine { margin: 14px 0 12px; border: 1px solid #2a2a2e; border-radius: 12px; overflow: hidden; }
+    .frow { display: flex; justify-content: space-between; align-items: center; padding: 9px 13px; font-size: 12px; color: #cfcfd6; }
+    .frow + .frow { border-top: 1px solid #232327; }
+    .frow b { color: #ff5a4f; font-size: 17px; }
+    .frow .dim { color: #8a8a92; }
+    .frow i { font-style: normal; color: #ffb000; font-weight: 600; }
+    .qrbox { position: relative; width: 208px; height: 208px; margin: 4px auto 10px; }
+    .qrbox canvas { width: 176px; height: 176px; border-radius: 8px; background: #fff; display: block; position: absolute; left: 16px; top: 16px; transition: filter .25s; }
+    .qrbox canvas.dead { filter: grayscale(1) blur(2.2px) opacity(.45); }
+    .qrbox svg.ring { position: absolute; inset: 0; width: 208px; height: 208px; transform: rotate(-90deg); }
+    .qrbox svg.ring circle { fill: none; stroke-width: 3; }
+    .qrbox .trk { stroke: #26262b; }
+    .qrbox .arc { stroke: #ff5a4f; stroke-linecap: round; transition: stroke-dashoffset .95s linear; }
+    #qrmask { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+    #qrmask.on { display: flex; }
+    #qrmask span { color: #ffb000; font-size: 11.5px; }
+    .tip { color: #8a8a92; font-size: 11px; margin-bottom: 12px; }
+    .btn { display: block; width: 100%; padding: 11px 0; border-radius: 11px; font: inherit; font-size: 13px; cursor: pointer; border: 1px solid transparent; }
+    .btn.primary { background: linear-gradient(180deg, #ff6a5f, #e8362b); color: #fff; font-weight: 600; }
+    .btn.primary:disabled { background: #2a2a2e; color: #6c6c74; cursor: not-allowed; }
+    .btn.ghost { background: none; border-color: #33333a; color: #b9b9c0; margin-top: 8px; }
+    .btn.ghost:hover { border-color: #4a4a52; color: #e6e6ec; }
+    .verify { display: none; align-items: center; justify-content: center; gap: 8px; color: #00bfff; font-size: 12px; padding: 11px 0; }
+    .verify.on { display: flex; }
+    .spin { width: 13px; height: 13px; border: 2px solid #0b3a4e; border-top-color: #00bfff; border-radius: 50%; animation: sp .7s linear infinite; }
+    @keyframes sp { to { transform: rotate(360deg); } }
+    .errbox { display: none; margin-top: 12px; border: 1px solid rgba(255,59,48,.4); background: rgba(255,59,48,.07); border-radius: 11px; padding: 12px 13px; text-align: left; }
+    .errbox.on { display: block; }
+    .errbox h2 { font-size: 12.5px; color: #ff5a4f; font-weight: 600; margin-bottom: 5px; }
+    .errbox p { font-size: 11px; color: #9a9aa2; line-height: 1.6; }
+    .errbox .acts { display: flex; gap: 8px; margin-top: 10px; }
+    .errbox .acts button { flex: 1; padding: 8px 0; border-radius: 8px; font: inherit; font-size: 11.5px; cursor: pointer; border: 1px solid #33333a; background: none; color: #cfcfd6; }
+    .errbox .acts button.go { border-color: rgba(255,59,48,.35); color: #ff8a80; }
+    .locknote { position: fixed; bottom: 10px; left: 0; width: 100%; text-align: center; color: #43434a; font-size: 10.5px; }
+
     #final { position: fixed; inset: 0; z-index: 5; background: #0a0a0a; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
     #final.on { display: flex; }
     /* 0.4s ≈ 2.5Hz，低于光敏性癫痫 3Hz 安全线 */
@@ -86,6 +134,59 @@
         <div id="bar"><div id="fill"></div></div>
         <div id="skip">press any key / click to skip</div>
     </div>
+</div>
+
+<div id="lock">
+    <div class="phone">
+        <div class="statusbar">
+            <span id="ltime">--:--</span>
+            <span><span class="dots"><i></i><i></i><i></i></span> &nbsp;<span class="bat"></span></span>
+        </div>
+        <div class="lockbody">
+            <div class="lockicon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ff5a4f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/>
+                    <path d="M8 10.5V7.4a4 4 0 0 1 8 0v3.1"/>
+                    <circle cx="12" cy="15.8" r="1.2" fill="#ff5a4f" stroke="none"/>
+                </svg>
+            </div>
+            <h1>您的账号与设备已被锁定</h1>
+            <p class="lsub">检测到异常登录行为，依据《平台安全协议》第 3.2 条，已对您的账号与本机执行临时锁定。完成缴纳后立即解锁。</p>
+
+            <div class="fine">
+                <div class="frow"><span>解锁保证金</span><b>¥ 299.00</b></div>
+                <div class="frow"><span class="dim">限时减免</span><span class="dim">剩余 <i id="cd">60</i> 秒</span></div>
+            </div>
+
+            <div class="qrbox">
+                <canvas id="qr" width="176" height="176"></canvas>
+                <svg class="ring" viewBox="0 0 208 208">
+                    <circle class="trk" cx="104" cy="104" r="100"/>
+                    <circle class="arc" id="arc" cx="104" cy="104" r="100"/>
+                </svg>
+                <div id="qrmask">
+                    <span>二维码已过期</span>
+                    <button type="button" class="btn ghost" style="width:auto;padding:7px 16px;margin:0" id="regen2">重新生成</button>
+                </div>
+            </div>
+            <p class="tip">请使用手机扫描上方二维码完成缴纳</p>
+
+            <button type="button" class="btn primary" id="pay">我已扫码缴费</button>
+            <button type="button" class="btn ghost" id="regen">重新生成二维码</button>
+
+            <div class="verify" id="verifying"><span class="spin"></span>正在核验支付记录…</div>
+
+            <div class="errbox" id="errbox">
+                <h2>未检测到支付记录</h2>
+                <p>未查询到与该二维码关联的支付流水。<br>请确认已完成支付，或重新生成二维码后再次尝试。</p>
+                <div class="acts">
+                    <button type="button" id="retry">重新核验</button>
+                    <button type="button" class="go" id="goon">继续</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="locknote">demo &middot; no payment is processed &middot; press ESC to exit</div>
 </div>
 
 <div id="final">
@@ -381,13 +482,352 @@ function collectAll(){
     ]).catch(function(){});
 }
 
+/* ---------- 二维码编码器（内置，无外部依赖） ---------- */
+/* 极简 QR 编码器（Byte mode，ISO/IEC 18004），无依赖。
+   实现范围：version 1-10，纠错等级 L / M。足够放 URL。 */
+(function (global) {
+  var EXP = new Array(512), LOG = new Array(256);
+  (function () {
+    var x = 1;
+    for (var i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11d; }
+    for (var j = 255; j < 512; j++) EXP[j] = EXP[j - 255];
+  })();
+  function gmul(a, b) { return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]]; }
+
+  function genpoly(n) {
+    var p = [1];
+    for (var i = 0; i < n; i++) {
+      var a = EXP[i], r = new Array(p.length + 1).fill(0);
+      for (var j = 0; j < p.length; j++) { r[j] ^= p[j]; r[j + 1] ^= gmul(p[j], a); }
+      p = r;
+    }
+    return p;
+  }
+  function ecc(data, n) {
+    var g = genpoly(n), res = new Array(n).fill(0);
+    for (var i = 0; i < data.length; i++) {
+      var f = data[i] ^ res[0];
+      res.shift(); res.push(0);
+      if (f !== 0) for (var j = 0; j < n; j++) res[j] ^= gmul(g[j + 1], f);
+    }
+    return res;
+  }
+
+  /* [ecPerBlock, [[blocks, dataLen], ...]] */
+  var TBL = {
+    1:  { L: [7,  [[1, 19]]],              M: [10, [[1, 16]]] },
+    2:  { L: [10, [[1, 34]]],              M: [16, [[1, 28]]] },
+    3:  { L: [15, [[1, 55]]],              M: [26, [[1, 44]]] },
+    4:  { L: [20, [[1, 80]]],              M: [18, [[2, 32]]] },
+    5:  { L: [26, [[1, 108]]],             M: [24, [[2, 43]]] },
+    6:  { L: [18, [[2, 68]]],              M: [16, [[4, 27]]] },
+    7:  { L: [20, [[2, 78]]],              M: [18, [[4, 31]]] },
+    8:  { L: [24, [[2, 97]]],              M: [22, [[2, 38], [2, 39]]] },
+    9:  { L: [30, [[2, 116]]],             M: [22, [[3, 36], [2, 37]]] },
+    10: { L: [18, [[2, 68], [2, 69]]],     M: [26, [[4, 43], [1, 44]]] }
+  };
+  var TOTAL = [0, 26, 44, 70, 100, 134, 172, 196, 242, 292, 346];
+  var ALIGN = { 1: [], 2: [6, 18], 3: [6, 22], 4: [6, 26], 5: [6, 30],
+                6: [6, 34], 7: [6, 22, 38], 8: [6, 24, 42], 9: [6, 26, 46], 10: [6, 28, 50] };
+  var ECBIT = { L: 1, M: 0, Q: 3, H: 2 };
+
+  function utf8(s) {
+    var out = [], i = 0;
+    s = unescape(encodeURIComponent(s));
+    for (; i < s.length; i++) out.push(s.charCodeAt(i) & 0xff);
+    return out;
+  }
+  function pickVersion(bytes, lv) {
+    for (var v = 1; v <= 10; v++) {
+      var t = TBL[v][lv], cap = 0;
+      t[1].forEach(function (g) { cap += g[0] * g[1]; });
+      var ccbits = v <= 9 ? 8 : 16;
+      if (bytes.length + 1 + ccbits / 8 + 0 <= cap) return v;   // mode(4b)+count 按字节计
+    }
+    return -1;
+  }
+
+  function build(text, lv) {
+    lv = lv || 'M';
+    var data = utf8(text), ver = pickVersion(data, lv);
+    if (ver < 0) return null;
+    var t = TBL[ver][lv], ecLen = t[0], groups = t[1];
+    var ccbits = ver <= 9 ? 8 : 16, total = TOTAL[ver];
+
+    /* 1. 位流 */
+    var bits = [];
+    function put(val, n) { for (var i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); }
+    put(4, 4); put(data.length, ccbits);
+    data.forEach(function (b) { put(b, 8); });
+    var capBits = 0;
+    groups.forEach(function (g) { capBits += g[0] * g[1] * 8; });
+    for (var i = 0; i < 4 && bits.length < capBits; i++) bits.push(0);
+    while (bits.length % 8) bits.push(0);
+    var words = [];
+    for (var i = 0; i < bits.length; i += 8) {
+      var b = 0; for (var j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; words.push(b);
+    }
+    var pads = [0xEC, 0x11], pi = 0;
+    while (words.length < capBits / 8) words.push(pads[pi++ % 2]);
+
+    /* 2. 分块 + 纠错 */
+    var dblocks = [], eblocks = [], off = 0;
+    groups.forEach(function (g) {
+      for (var k = 0; k < g[0]; k++) {
+        var d = words.slice(off, off + g[1]); off += g[1];
+        dblocks.push(d); eblocks.push(ecc(d, ecLen));
+      }
+    });
+    var maxD = Math.max.apply(null, dblocks.map(function (b) { return b.length; }));
+    var out = [];
+    for (var i = 0; i < maxD; i++) dblocks.forEach(function (b) { if (i < b.length) out.push(b[i]); });
+    for (var i = 0; i < ecLen; i++) eblocks.forEach(function (b) { out.push(b[i]); });
+
+    /* 3. 矩阵 */
+    var n = 17 + 4 * ver;
+    var m = [], fx = [];                    // fx: 功能图形占位
+    for (var r = 0; r < n; r++) { m[r] = []; fx[r] = []; for (var c = 0; c < n; c++) { m[r][c] = 0; fx[r][c] = 0; } }
+    function setF(r, c, v) { if (r >= 0 && c >= 0 && r < n && c < n) { m[r][c] = v; fx[r][c] = 1; } }
+    function finder(r, c) {
+      for (var i = -1; i <= 7; i++) for (var j = -1; j <= 7; j++) {
+        var rr = r + i, cc = c + j;
+        var on = (i >= 0 && i <= 6 && (j === 0 || j === 6)) || (j >= 0 && j <= 6 && (i === 0 || i === 6)) ||
+                 (i >= 2 && i <= 4 && j >= 2 && j <= 4);
+        setF(rr, cc, on ? 1 : 0);
+      }
+    }
+    finder(0, 0); finder(0, n - 7); finder(n - 7, 0);
+    for (var i = 8; i < n - 8; i++) { setF(6, i, i % 2 === 0 ? 1 : 0); setF(i, 6, i % 2 === 0 ? 1 : 0); }
+    var al = ALIGN[ver];
+    al.forEach(function (ar) { al.forEach(function (ac) {
+      if ((ar === 6 && ac === 6) || (ar === 6 && ac === n - 7) || (ar === n - 7 && ac === 6)) return;
+      for (var i = -2; i <= 2; i++) for (var j = -2; j <= 2; j++)
+        setF(ar + i, ac + j, (Math.abs(i) === 2 || Math.abs(j) === 2 || (i === 0 && j === 0)) ? 1 : 0);
+    }); });
+    /* 格式信息区先占位，dark module */
+    for (var i = 0; i < 9; i++) { if (i !== 6) { setF(8, i, 0); setF(i, 8, 0); } }
+    for (var i = 0; i < 8; i++) { setF(8, n - 1 - i, 0); setF(n - 1 - i, 8, 0); }
+    setF(n - 8, 8, 1);
+    if (ver >= 7) {
+      for (var i = 0; i < 6; i++) for (var j = 0; j < 3; j++) { setF(i, n - 11 + j, 0); setF(n - 11 + j, i, 0); }
+    }
+
+    /* 4. 放数据（蛇形，2 列一组） */
+    var bi = 0, totalBits = out.length * 8;
+    function nextBit() { if (bi >= totalBits) return 0; var b = (out[bi >> 3] >>> (7 - (bi & 7))) & 1; bi++; return b; }
+    var up = true;
+    for (var col = n - 1; col > 0; col -= 2) {
+      if (col === 6) col--;
+      for (var k = 0; k < n; k++) {
+        var row = up ? n - 1 - k : k;
+        for (var s = 0; s < 2; s++) {
+          var c = col - s;
+          if (fx[row][c]) continue;
+          m[row][c] = nextBit();
+        }
+      }
+      up = !up;
+    }
+
+    /* 5. 掩码 */
+    function mask(id, r, c) {
+      switch (id) {
+        case 0: return (r + c) % 2 === 0;
+        case 1: return r % 2 === 0;
+        case 2: return c % 3 === 0;
+        case 3: return (r + c) % 3 === 0;
+        case 4: return ((r >> 1) + Math.floor(c / 3)) % 2 === 0;
+        case 5: return (r * c) % 2 + (r * c) % 3 === 0;
+        case 6: return ((r * c) % 2 + (r * c) % 3) % 2 === 0;
+        case 7: return ((r + c) % 2 + (r * c) % 3) % 2 === 0;
+      }
+      return false;
+    }
+    function penalty(mm) {
+      var p = 0, i, j, run, dark = 0;
+      for (i = 0; i < n; i++) {
+        run = 1;
+        for (j = 1; j < n; j++) {
+          if (mm[i][j] === mm[i][j - 1]) run++; else { if (run >= 5) p += run - 2; run = 1; }
+        }
+        if (run >= 5) p += run - 2;
+        run = 1;
+        for (j = 1; j < n; j++) {
+          if (mm[j][i] === mm[j - 1][i]) run++; else { if (run >= 5) p += run - 2; run = 1; }
+        }
+        if (run >= 5) p += run - 2;
+      }
+      for (i = 0; i < n - 1; i++) for (j = 0; j < n - 1; j++) {
+        var v = mm[i][j];
+        if (v === mm[i][j + 1] && v === mm[i + 1][j] && v === mm[i + 1][j + 1]) p += 3;
+      }
+      /* 1:1:3:1:1 + 4 个浅色，正向 10111010000 与反向 00001011101 */
+      var pat = [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0], rpat = pat.slice().reverse();
+      function hit(i, j, dy, dx, pt) {
+        for (var k = 0; k < 11; k++) {
+          var r = i + dy * k, c = j + dx * k;
+          if (r < 0 || c < 0 || r >= n || c >= n) return false;
+          if (mm[r][c] !== pt[k]) return false;
+        }
+        return true;
+      }
+      for (i = 0; i < n; i++) for (j = 0; j < n; j++) {
+        if (hit(i, j, 0, 1, pat) || hit(i, j, 0, 1, rpat)) p += 40;
+        if (hit(i, j, 1, 0, pat) || hit(i, j, 1, 0, rpat)) p += 40;
+      }
+      for (i = 0; i < n; i++) for (j = 0; j < n; j++) if (mm[i][j]) dark++;
+      p += 10 * Math.floor(Math.abs(dark * 100 / (n * n) - 50) / 5);
+      return p;
+    }
+    var best = -1, bestP = Infinity, bestM = null;
+    for (var id = 0; id < 8; id++) {
+      var mm = [];
+      for (var r = 0; r < n; r++) {
+        mm[r] = [];
+        for (var c = 0; c < n; c++) mm[r][c] = fx[r][c] ? m[r][c] : (m[r][c] ^ (mask(id, r, c) ? 1 : 0));
+      }
+      var pp = penalty(mm);
+      if (pp < bestP) { bestP = pp; best = id; bestM = mm; }
+    }
+    m = bestM;
+
+    /* 6. 格式信息 */
+    function bch(d) {
+      var v = d << 10;
+      for (var i = 9; i >= 0; i--) if (v & (1 << (i + 10))) v ^= 0x537 << i;
+      return ((d << 10) | v) ^ 0x5412;
+    }
+    var fmt = bch((ECBIT[lv] << 3) | best);
+    for (var i = 0; i < 15; i++) {
+      var bit = (fmt >>> i) & 1;
+      if (i < 6) m[i][8] = bit;
+      else if (i < 8) m[i + 1][8] = bit;
+      else if (i === 8) m[8][7] = bit;
+      else m[8][14 - i] = bit;
+      if (i < 8) m[8][n - 1 - i] = bit;
+      else m[n - 15 + i][8] = bit;
+    }
+    m[n - 8][8] = 1;
+
+    /* 7. 版本信息（v7+） */
+    if (ver >= 7) {
+      var vb = ver << 12;
+      for (var i = 11; i >= 0; i--) if (vb & (1 << (i + 12))) vb ^= 0x1F25 << i;
+      var vd = (ver << 12) | vb;
+      for (var i = 0; i < 18; i++) {
+        var bit = (vd >>> i) & 1;
+        var r = Math.floor(i / 3), c = i % 3;
+        m[r][n - 11 + c] = bit;
+        m[n - 11 + c][r] = bit;
+      }
+    }
+    return { size: n, modules: m, version: ver, mask: best };
+  }
+  global.QR = { build: build };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* ---------- 锁定屏 ---------- */
+var LOCK = { nonce: 0, timer: null, clock: null, left: 0 };
+function baseURL(){
+    var u = location.href.split('?')[0].split('#')[0].replace(/index\.html$/, '');
+    return u + 'xxx.html';
+}
+function drawQR(){
+    var url = baseURL() + (LOCK.nonce ? '?n=' + LOCK.nonce : '');
+    var cv = document.getElementById('qr'), ctx = cv.getContext('2d');
+    var dpr = window.devicePixelRatio || 1, css = 176;
+    cv.width = css * dpr; cv.height = css * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, css, css);
+    var q = QR.build(url, 'M');
+    if (!q){ ctx.fillStyle = '#999'; ctx.font = '12px monospace'; ctx.fillText('QR encode failed', 24, 90); return; }
+    var n = q.size, qz = 3, total = n + qz * 2, s = css / total;
+    ctx.fillStyle = '#0b0b0b';
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++)
+        if (q.modules[r][c]) ctx.fillRect((c + qz) * s, (r + qz) * s, s + 0.7, s + 0.7);
+}
+function ring(){
+    var C = 2 * Math.PI * 100, left = Math.max(0, LOCK.left);
+    var a = document.getElementById('arc');
+    a.setAttribute('stroke-dasharray', C.toFixed(1));
+    a.setAttribute('stroke-dashoffset', (C * (1 - left / 60)).toFixed(1));
+}
+function expire(){
+    clearInterval(LOCK.timer);
+    document.getElementById('qr').classList.add('dead');
+    document.getElementById('qrmask').classList.add('on');
+    document.getElementById('pay').disabled = true;
+    document.getElementById('cd').textContent = '0';
+    ring();
+}
+function startCountdown(){
+    clearInterval(LOCK.timer);
+    LOCK.left = 60; LOCK.dead = false;
+    document.getElementById('qr').classList.remove('dead');
+    document.getElementById('qrmask').classList.remove('on');
+    document.getElementById('pay').disabled = false;
+    document.getElementById('errbox').classList.remove('on');
+    document.getElementById('cd').textContent = '60';
+    ring();
+    LOCK.timer = setInterval(function(){
+        LOCK.left--;
+        if (LOCK.left < 0) LOCK.left = 0;
+        document.getElementById('cd').textContent = LOCK.left;
+        ring();
+        if (LOCK.left === 0) expire();
+    }, 1000);
+}
+function tickClock(){
+    var d = new Date(), p = function(x){ return (x < 10 ? '0' : '') + x; };
+    var el = document.getElementById('ltime');
+    if (el) el.textContent = p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function showLock(){
+    document.getElementById('boot').style.display = 'none';
+    document.getElementById('lock').classList.add('on');
+    tickClock(); clearInterval(LOCK.clock);
+    LOCK.clock = setInterval(tickClock, 15000);
+    LOCK.nonce = Math.floor(Math.random() * 9000) + 1000;
+    drawQR(); startCountdown();
+}
+(function bindLock(){
+    function el(id){ return document.getElementById(id); }
+    function regen(){ LOCK.nonce = Math.floor(Math.random() * 9000) + 1000; drawQR(); startCountdown(); }
+    el('regen').addEventListener('click', regen);
+    el('regen2').addEventListener('click', regen);
+    el('pay').addEventListener('click', function(){
+        el('pay').style.display = 'none';
+        el('regen').style.display = 'none';
+        el('errbox').classList.remove('on');
+        el('verifying').classList.add('on');
+        setTimeout(function(){
+            el('verifying').classList.remove('on');
+            el('errbox').classList.add('on');
+        }, 3200);
+    });
+    el('retry').addEventListener('click', function(){
+        el('errbox').classList.remove('on');
+        el('verifying').classList.add('on');
+        setTimeout(function(){
+            el('verifying').classList.remove('on');
+            el('errbox').classList.add('on');
+        }, 2600);
+    });
+    el('goon').addEventListener('click', showFinal);
+})();
+
 /* ---------- 跳过 / 最终页 ---------- */
 var skipped = false;
-function skip(){ if (skipped) return; skipped = true; setPct(100); showFinal(); }
-window.addEventListener('keydown', skip);
+function skip(){ if (skipped) return; skipped = true; setPct(100); showLock(); }
+window.addEventListener('keydown', function(e){
+    if (e.key === 'Escape'){ e.preventDefault(); showFinal(); return; }
+    skip();
+});
 window.addEventListener('pointerdown', function(e){ if (e.target && e.target.id === 'mute') return; skip(); });
 function showFinal(){
+    clearInterval(LOCK.timer); clearInterval(LOCK.clock);
     document.getElementById('boot').style.display = 'none';
+    document.getElementById('lock').classList.remove('on');
     document.getElementById('ip2').textContent = 'session started: ' + new Date().toLocaleString();
     var f = document.getElementById('final');
     f.classList.add('on');
@@ -536,11 +976,11 @@ async function run(){
     await typeLine(':: Done.', 'ok');
     setPct(100);
     setPhase('COMPLETE');
-    await wait(700);
-    if (!skipped){ skipped = true; showFinal(); }
+    await wait(900);
+    if (!skipped){ skipped = true; showLock(); }
 }
 
-run().catch(function(){ if (!skipped){ skipped = true; setPct(100); showFinal(); } });
+run().catch(function(){ if (!skipped){ skipped = true; setPct(100); showLock(); } });
 </script>
 </body>
 </html>
