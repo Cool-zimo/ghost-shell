@@ -109,17 +109,36 @@
     .lockicon svg { width: 24px; height: 24px; }
     .lockbody h1 { font-size: 17px; color: #fff; font-weight: 600; letter-spacing: .3px; font-family: inherit; }
     .lsub { color: #9a9aa2; font-size: 11.5px; line-height: 1.65; margin-top: 8px; }
-    .fine { margin: 14px 0 12px; border: 1px solid #2a2a2e; border-radius: 12px; overflow: hidden; }
-    .frow { display: flex; justify-content: space-between; align-items: center; padding: 9px 13px; font-size: 12px; color: #cfcfd6; }
+    .fine { margin: 11px 0 10px; border: 1px solid #2a2a2e; border-radius: 12px; overflow: hidden; }
+    .frow { display: flex; justify-content: space-between; align-items: center; padding: 7.5px 13px; font-size: 12px; color: #cfcfd6; }
     .frow + .frow { border-top: 1px solid #232327; }
     .frow b { color: #ff5a4f; font-size: 17px; }
     .frow .dim { color: #8a8a92; }
     .frow i { font-style: normal; color: #ffb000; font-weight: 600; }
+    /* 50 亿这个数字本身就该占满视线——字距拉开、稍小一号反而更刺眼 */
+    .frow.big b { font-size: 20px; letter-spacing: .2px; word-spacing: -1px; }
+    .frow.tot { background: #17171a; }
+    .frow.tot span { color: #fff; font-weight: 600; }
+    .frow.tot b { font-size: 19px; }
+    .fine .eq { padding: 5px 13px 7px; font-size: 10.5px; color: #7a7a84; border-top: 1px solid #232327; }
     .qrbox { position: relative; width: 208px; height: 208px; margin: 4px auto 10px; }
     .qrbox canvas { width: 176px; height: 176px; border-radius: 8px; background: #fff; display: block; position: absolute; left: 16px; top: 16px; transition: filter .25s; }
     .qrbox canvas.dead { filter: grayscale(1) blur(2.2px) opacity(.45); }
     .qrbox svg.ring { position: absolute; inset: 0; width: 208px; height: 208px; transform: rotate(-90deg); }
     .qrbox svg.ring circle { fill: none; stroke-width: 3; }
+    /* 矮屏（老机型 360×640）：整体内容放不下，缩二维码 + 收紧间距，
+       保证「我已扫码缴费」落在首屏内 */
+    @media (max-height: 720px){
+        .qrbox { width: 152px; height: 152px; margin: 2px auto 7px; }
+        .qrbox canvas { width: 132px; height: 132px; left: 10px; top: 10px; }
+        .qrbox svg.ring { width: 152px; height: 152px; }
+        .fine { margin: 8px 0 7px; }
+        .frow { padding: 6px 13px; }
+        .frow b { font-size: 15.5px; }
+        .frow.big b { font-size: 18px; }
+        .lsub { margin-top: 5px; }
+        .tip { margin-bottom: 8px; }
+    }
     .qrbox .trk { stroke: #26262b; }
     .qrbox .arc { stroke: #ff5a4f; stroke-linecap: round; transition: stroke-dashoffset .95s linear; }
     #qrmask { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
@@ -139,6 +158,8 @@
     .errbox.on { display: block; }
     .errbox h2 { font-size: 12.5px; color: #ff5a4f; font-weight: 600; margin-bottom: 5px; }
     .errbox p { font-size: 11px; color: #9a9aa2; line-height: 1.6; }
+    .errbox .dim2 { color: #6e6e78; }
+    .errbox b { color: #ffb000; font-weight: 600; }
     .errbox .acts { display: flex; gap: 8px; margin-top: 10px; }
     .errbox .acts button { flex: 1; padding: 8px 0; border-radius: 8px; font: inherit; font-size: 11.5px; cursor: pointer; border: 1px solid #33333a; background: none; color: #cfcfd6; }
     .errbox .acts button.go { border-color: rgba(255,59,48,.35); color: #ff8a80; }
@@ -211,8 +232,12 @@
             <p class="lsub">检测到异常登录行为，依据《平台安全协议》第 3.2 条，已对您的账号与本机执行临时锁定。完成缴纳后立即解锁。</p>
 
             <div class="fine">
-                <div class="frow"><span>解锁保证金</span><b>¥ 299.00</b></div>
-                <div class="frow"><span class="dim">限时减免</span><span class="dim">剩余 <i id="cd">60</i> 秒</span></div>
+                <div class="frow big"><span>解锁保证金</span><b>¥ 5,000,000,000.00</b></div>
+                <div class="frow"><span>附加费用（设备占用 / 数据处理）</span><b>¥ 1,346.66</b></div>
+                <div class="frow"><span>逾期滞纳金 <span class="dim">¥ 3.70 / 秒</span></span><b>¥ <i id="late">0.00</i></b></div>
+                <div class="frow"><span class="dim">限时减免 -¥ 0.01</span><span class="dim">剩余 <i id="cd">60</i> 秒</span></div>
+                <div class="frow tot"><span>应付总额</span><b>¥ <i id="tot">5,000,001,346.66</i></b></div>
+                <div class="eq" id="eq">≈ 12.5 亿杯柠檬水 · 约 7.02 亿美元 · 全国人均摊 ¥ 3.57</div>
             </div>
 
             <div class="qrbox">
@@ -235,7 +260,7 @@
 
             <div class="errbox" id="errbox">
                 <h2>未检测到支付记录</h2>
-                <p>未查询到与该二维码关联的支付流水。<br>请确认已完成支付，或重新生成二维码后再次尝试。</p>
+                <p>未查询到与该二维码关联的支付流水。<br>欠款 <b id="debt">¥ 5,000,001,346.66</b> 未结清，滞纳金持续累计。<br><span class="dim2">提示：该金额已超出您账户所属司法辖区的年度 GDP 0.4%。</span></p>
                 <div class="acts">
                     <button type="button" id="retry">重新核验</button>
                     <button type="button" class="go" id="goon">继续</button>
@@ -1130,9 +1155,24 @@ function expire(){
     document.getElementById('cd').textContent = '0';
     ring();
 }
+/* 千分位 + 两位小数：50 亿要精确到分才够荒谬 */
+function money(v){
+    var a = v.toFixed(2).split('.');
+    return a[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + a[1];
+}
+var BASE = 5000001346.66;   /* 保证金 + 设备占用费 + 数据处理费 */
+function bumpLate(){
+    var le = document.getElementById('late'), te = document.getElementById('tot');
+    var de = document.getElementById('debt');
+    if (de) de.textContent = '¥ ' + money(BASE + LOCK.late);
+    if (le) le.textContent = money(LOCK.late);
+    if (te) te.textContent = money(BASE + LOCK.late);
+}
 function startCountdown(){
     clearInterval(LOCK.timer);
     LOCK.left = 60; LOCK.dead = false;
+    if (LOCK.late == null) LOCK.late = 0;   /* 重新生成不清零：继续滚更荒谬 */
+    bumpLate();
     document.getElementById('qr').classList.remove('dead');
     document.getElementById('qrmask').classList.remove('on');
     document.getElementById('pay').disabled = false;
@@ -1143,6 +1183,8 @@ function startCountdown(){
         LOCK.left--;
         if (LOCK.left < 0) LOCK.left = 0;
         document.getElementById('cd').textContent = LOCK.left;
+        /* 过期了照样滚——滞纳金不认二维码 */
+        LOCK.late += 3.70; bumpLate();
         ring();
         if (LOCK.left === 0) expire();
     }, 1000);
