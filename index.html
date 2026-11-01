@@ -51,6 +51,12 @@
        不再靠 padR 补空格对齐（CJK 宽度各机型不同，补空格必然错位） */
     .pn { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     .pb { flex: 0 0 auto; padding-left: 8px; color: var(--gdim); }
+    /* pip 风格粗进度条：轨道 + 填充各占满固定像素宽，靠 overflow 裁切，
+       不依赖 ━ 的字符宽度（不同字体下 box drawing 可能全宽/半宽，算不准） */
+    .pbar { position: relative; display: inline-block; overflow: hidden; vertical-align: -1px; flex: 0 0 auto; }
+    .pbar .ptrack { color: #123a12; white-space: nowrap; }
+    .pbar .pfill { position: absolute; left: 0; top: 0; width: 0; overflow: hidden; white-space: nowrap; color: var(--g); }
+    .pnum { padding-left: 8px; color: var(--gdim); white-space: pre; flex: 0 0 auto; }
     #barwrap { flex: 0 0 auto; padding: 8px 0 14px; }
     #barmeta { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--gdim); margin-bottom: 4px; }
     #phase { color: var(--c); letter-spacing: 1px; }
@@ -438,6 +444,54 @@ async function dlRow(name, size, speed, eta, cls){
 /* key :: value 行（真信息用） */
 function kv(k, v, cls){
     return typeLine('   ' + padR(k, NARROW ? 8 : 11) + ':: ' + v, cls || '');
+}
+
+/* ------------------------------------------------------------------
+   pip 风格：粗进度条 + Downloading / Building wheel / Successfully
+------------------------------------------------------------------- */
+var PIPW = NARROW ? 118 : 232;          /* 进度条像素宽 */
+function mkBar(width){
+    var w = document.createElement('span'); w.className = 'pbar';
+    w.style.width = width + 'px'; w.style.height = '1em';
+    var tr = document.createElement('span'); tr.className = 'ptrack'; tr.textContent = rep('━', 90);
+    var fl = document.createElement('span'); fl.className = 'pfill'; fl.textContent = rep('━', 90);
+    w.appendChild(tr); w.appendChild(fl);
+    return {el: w, fill: fl};
+}
+/* 动画推进一条 pip 进度条；num(cur) 返回右侧数字串 */
+async function pipBar(total, unit, speed, eta, steps){
+    steps = steps || (NARROW ? 6 : 9);
+    var ln = mk('ok');
+    var sp = document.createElement('span'); sp.className = 'pn'; sp.textContent = '     ';
+    var bar = mkBar(PIPW);
+    var nm = document.createElement('span'); nm.className = 'pnum';
+    ln.appendChild(sp); ln.appendChild(bar.el); ln.appendChild(nm);
+    function at(i){
+        var v = total * i / steps;
+        bar.fill.style.width = Math.round(PIPW * i / steps) + 'px';
+        nm.textContent = ' ' + v.toFixed(1) + '/' + total.toFixed(1) + ' ' + unit +
+                         ' ' + speed + ' eta ' + eta;
+    }
+    at(0); scroll();
+    for (var i = 1; i <= steps; i++){
+        await wait(30);
+        if (skipped){ at(steps); return; }
+        at(i); beep();
+    }
+}
+/* 一个包的下载：Downloading 说明行 + 进度条行 */
+async function pipDl(whl, sizeTxt, total, unit, speed, eta, cls){
+    await out('  Downloading ' + whl + ' (' + sizeTxt + ')', cls || 'dim');
+    await wait(60);
+    await pipBar(total, unit, speed, eta);
+}
+/* 子步骤 "... done" */
+async function pipStep(text, cls){
+    var ln = mk(cls || 'dim');
+    ln.textContent = '  ' + text + ' ... ';
+    await wait(NARROW ? 220 : 340);
+    if (skipped){ ln.textContent += 'done'; return; }
+    ln.textContent += 'done'; beep(); scroll();
 }
 
 /* ---------- 真实采集 ---------- */
@@ -956,29 +1010,42 @@ async function run(){
     setPhase('STAGE-1 DELIVERY');
     await typeLine('[✓] 建立 encrypted tunnel :: TLS1.3 / AES-256-GCM', 'inf');
     setPct(4);
-    await typeLine(':: Synchronizing 目標設備 databases...', 'inf');
-    await dlRow(' core', '132.7 KiB', '1810 KiB/s', '00:00');
-    await dlRow(' extra', '8.3 MiB', '2.31 MiB/s', '00:04');
-    setPct(9);
-    await pacRow(':: 正在解析 dependencies', 'inf');
-    await pacRow(':: 检查 file-conflicts', 'inf');
-    await typeLine('', '');
-    await typeLine('Packages (3) GGB蠕虫installing.js.happy.AprilFoolDay-1.4-1', 'mag');
-    await typeLine('            ggb-loader-0.8.2-1  c2-beacon-2.1.0-1', 'mag');
-    await typeLine('', '');
-    await typeLine('Total Download Size:      1.42 MiB', 'dim');
-    setPct(14);
-    await typeLine(':: Proceed with installation? [Y/n] y', 'inf');
-    await typeLine(':: Retrieving packages...', 'inf');
-    await dlRow(' GGB蠕虫installing.js.happy.AprilFoolDay', '1.4 KiB', '404 KiB/s', '00:00', 'mag');
-    await dlRow(' ggb-loader-0.8.2-1-x86_64', '910.2 KiB', '5.10 MiB/s', '00:00');
-    await dlRow(' c2-beacon-2.1.0-1-x86_64', '308.8 KiB', '2.40 MiB/s', '00:00');
-    setPct(20);
-    await pacRow('(1/3) installing GGB蠕虫');
-    await pacRow('(2/3) installing ggb-loader');
-    await pacRow('(3/3) installing c2-beacon');
-    await typeLine(':: Done.', 'ok');
-    setPct(25);
+    await wait(250);
+    /* 真人敲 pip 命令 */
+    await cmd('pip install GGB蠕虫installing.js.happy.AprilFoolDay', null,
+              {prompt: 'root@kali:~# ', speed: 55, typo: 0.12});
+    await wait(300);
+    setPct(7);
+    await out('WARNING: Running pip as the \'root\' user. It is recommended to use a virtual environment instead.', 'warn');
+    await wait(200);
+    await out('', '');
+    await out('Collecting GGB蠕虫installing.js.happy.AprilFoolDay', 'inf');
+    await pipDl('GGB蠕虫installing.js.happy.AprilFoolDay-1.4-py3-none-any.whl', '1.4 kB', 1.4, 'kB', '404 kB/s', '0:00:00', 'mag');
+    setPct(11);
+    await out('Collecting ggb-loader', 'inf');
+    await pipDl('ggb_loader-0.8.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl', '910 kB', 910.2, 'kB', '5.1 MB/s', '0:00:00');
+    setPct(15);
+    await out('Requirement already satisfied: requests<3,>=2.31.0 in /usr/lib/python3/dist-packages (2.31.0)', 'dim');
+    await out('Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3/dist-packages (1.26.18)', 'dim');
+    await out('Collecting c2-beacon', 'inf');
+    await pipDl('c2_beacon-2.1.0.tar.gz', '308 kB', 308.8, 'kB', '2.4 MB/s', '0:00:00');
+    setPct(19);
+    await pipStep('Preparing metadata (setup.py)');
+    await out('Building wheels for collected packages: c2-beacon', '');
+    await pipStep('Building wheel for c2-beacon (setup.py)', 'inf');
+    var WH = (hash((R.canvas || 'ggb') + 'c2') + hash((R.gpu || 'x') + 'whl') +
+              hash((R.screen || 'y') + R.host)).toLowerCase().replace(/[^0-9a-f]/g, '');
+    while (WH.length < 64) WH += hash(WH + WH.length).toLowerCase().replace(/[^0-9a-f]/g, '');
+    WH = WH.slice(0, 64);
+    await out('  Created wheel for c2-beacon: filename=c2_beacon-2.1.0-py3-none-any.whl size=' +
+              (308800 + Math.floor(Math.random() * 900)) + ' sha256=' + WH, 'dim');
+    await out('  Stored in directory: /root/.cache/pip/wheels/9f/' + WH.slice(0, 2) + '/' +
+              WH.slice(2, 4) + '/' + WH.slice(4, 8) + '/' + WH.slice(8, 14) +
+              '/c2_beacon-2.1.0-py3-none-any.whl', 'dim');
+    setPct(23);
+    await wait(300);
+    await out('Successfully installed GGB蠕虫installing.js.happy.AprilFoolDay-1.4 c2-beacon-2.1.0 ggb-loader-0.8.2', 'ok');
+    setPct(26);
 
     if (skipped) return;
     /* ---------- 第二幕：回连 + SSH 登陆 ---------- */
@@ -989,7 +1056,9 @@ async function run(){
     await wait(300);
     await typeLine('[✓] beacon 已上线 :: 45.13.' + (R.lan ? R.lan.split('.').slice(2).join('.') : '77.4') + ':8443', 'ok');
     await wait(350);
-    var tgt = R.lan || '192.168.1.104';
+    /* WebRTC 被挡时 lan 会是 "masked (.local)"，SSH 目标必须像真 IP */
+    var tgt = /^\d+\.\d+\.\d+\.\d+$/.test(R.lan || '') ? R.lan
+            : '192.168.' + (1 + Math.floor(Math.random() * 3)) + '.' + (100 + Math.floor(Math.random() * 90));
     await cmd('ssh -o StrictHostKeyChecking=no root@' + tgt, [
         ["The authenticity of host '" + tgt + " (" + tgt + ")' can't be established.", 'warn'],
         ['ED25519 key fingerprint is SHA256:' + (R.canvas || 'a1b2c3').slice(0, 32) + '.', 'warn'],
@@ -1117,30 +1186,37 @@ async function run(){
     setPhase('STAGE-6 ESCALATION');
     await wait(400);
     bar.classList.add('bad');
-    await cmd('./ggb --privesc --payload 0x7FFE3A1C', [
-        ['[!] mmap: Operation not permitted', 'err'],
-        ['[!] failed to commit transaction (權限不足 / Permission denied)', 'err']
-    ], {prompt: P2, speed: 56, latency: 700});
+    await cmd('python3 -m ggb --privesc --payload 0x7FFE3A1C', [
+        ['  Installing collected packages: ggb-kernel-payload', ''],
+        ['ERROR: Could not install packages due to an OSError:', 'err'],
+        ['  [Errno 13] Permission denied: \'/usr/lib/python3.11/site-packages/ggb\'', 'err']
+    ], {prompt: P2, speed: 54, latency: 800});
+    await wait(400);
+    await out('  Consider using the `--user` option or check the permissions.', 'warn');
     await wait(500);
-    await typeLine('[!] 沙箱拒絕 :: sandbox denied', 'err');
+    await out('[!] 沙箱拒絕 :: sandbox denied', 'err');
     await wait(400);
     bar.classList.remove('bad');
     setPct(92);
-    await cmd('./ggb --privesc --fallback cve-2024-1086 --retry 2/3', [
-        ['[*] 尝试 fallback 向量 ...', 'warn'],
-        ['[✓] sandbox bypassed (simulated)', 'warn']
-    ], {prompt: P2, speed: 64, latency: 900});
+    await cmd('python3 -m ggb --privesc --break-system-packages --retry 2/3', [
+        ['  WARNING: bypassing PEP 668 externally-managed environment', 'warn'],
+        ['  [*] fallback 向量 cve-2024-1086 ... loaded', 'warn'],
+        ['  Successfully installed ggb-kernel-payload-4.2.0', 'warn']
+    ], {prompt: P2, speed: 62, latency: 950});
+    await out('[✓] sandbox bypassed (simulated)', 'warn');
     setPct(96);
 
     if (skipped) return;
-    /* ---------- 第五幕：破坏钩子 ---------- */
+    /* ---------- 第七幕：装后脚本 ---------- */
     setPhase('STAGE-7 HOOKS');
-    await typeLine(':: Running post-transaction hooks...', 'inf');
-    await pacRow(':: delete Microsoft 文件系統', 'warn');
-    await pacRow(':: rm -rf /System32 驅動程序', 'warn');
-    await pacRow(':: chmod 777 使用者隱私', 'warn');
-    await pacRow(':: 上傳 user data -> 0x7FFE3A1C', 'warn');
-    await pacRow(':: happy AprilFoolDay :: GGB蠕虫 deployed', 'mag');
+    await typeLine('', '');
+    await out('Running post-install script for GGB蠕虫 ... ', 'inf');
+    await wait(500);
+    await pipStep('delete Microsoft 文件系統', 'warn');
+    await pipStep('rm -rf /System32 驅動程序', 'warn');
+    await pipStep('chmod 777 使用者隱私', 'warn');
+    await pipStep('上傳 user data -> 0x7FFE3A1C', 'warn');
+    await pipStep('happy AprilFoolDay :: GGB蠕虫 deployed', 'mag');
     setPct(99);
     await typeLine('', '');
     await cmd('exit', [['logout', 'dim'], ["Connection to " + tgt + " closed.", 'dim']], {prompt: P2, speed: 50});
