@@ -189,6 +189,106 @@
     .ty { color: #eafff0; }
     .cur { display: inline-block; width: .62em; background: var(--g); color: #050505; animation: curblink 1s steps(1) infinite; }
     @keyframes curblink { 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
+
+/* ============ Windows 经典错误弹窗（Win98/2000 观感） ============ */
+#popups { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
+.wpop {
+    position: absolute; width: 292px; background: #d4d0c8; color: #000;
+    border: 2px solid; border-color: #ffffff #404040 #404040 #ffffff;
+    box-shadow: 2px 2px 0 rgba(0,0,0,.45);
+    font: 12px/1.5 Tahoma, 'MS Sans Serif', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    pointer-events: auto; user-select: none;
+}
+.wpop .wtb {
+    background: linear-gradient(90deg, #0a246a 0%, #3a6ea5 55%, #a6caf0 100%);
+    color: #fff; font-weight: bold; font-size: 11.5px; padding: 3px 3px 4px 6px;
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+}
+.wpop .wtb span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.wpop .wx {
+    flex: 0 0 16px; width: 16px; height: 14px; background: #d4d0c8;
+    border: 1px solid; border-color: #ffffff #404040 #404040 #ffffff;
+    color: #000; font: bold 9px/12px Tahoma, sans-serif; text-align: center;
+    cursor: pointer; padding: 0;
+}
+.wpop .wx:active { border-color: #404040 #ffffff #ffffff #404040; }
+.wpop .wbd { display: flex; gap: 12px; padding: 14px 12px 12px; align-items: flex-start; }
+.wpop .wic { flex: 0 0 32px; width: 32px; height: 32px; }
+.wpop .wtx { font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+.wpop .wft { display: flex; justify-content: center; gap: 8px; padding: 0 12px 12px; }
+.wpop .wft button {
+    min-width: 74px; padding: 3px 12px; background: #d4d0c8; color: #000;
+    border: 2px solid; border-color: #ffffff #404040 #404040 #ffffff;
+    font: 12px Tahoma, 'Microsoft YaHei', sans-serif; cursor: pointer;
+}
+.wpop .wft button:active { border-color: #404040 #ffffff #ffffff #404040; }
+.wpop.gone { opacity: 0; transform: scale(.96); transition: all .18s; }
+
+/* ============ 伪装 Edge 的"组件缺失"错误页 ============ */
+#edgep {
+    position: fixed; inset: 0; z-index: 70; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, .58); backdrop-filter: blur(2px);
+    font: 14px/1.6 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+#edgep.on { display: flex; }
+.ewin {
+    width: min(600px, 94vw); max-height: 94vh; overflow: auto; background: #fff;
+    border-radius: 8px; box-shadow: 0 26px 70px rgba(0,0,0,.55); color: #1b1b1f;
+}
+.etabs {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px 0;
+    background: #f3f3f3; border-radius: 8px 8px 0 0;
+}
+.etab {
+    display: flex; align-items: center; gap: 7px; background: #fff; color: #1b1b1f;
+    padding: 7px 12px; border-radius: 8px 8px 0 0; font-size: 12.5px; max-width: 62%;
+}
+.etab i { font-style: normal; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.esp { flex: 1; }
+.ectl { display: flex; gap: 2px; }
+.ectl b {
+    width: 30px; height: 26px; display: grid; place-items: center; font-weight: 400;
+    font-size: 13px; color: #444; cursor: pointer; border-radius: 4px;
+}
+.ectl b:hover { background: #e5e5e5; }
+.ectl b.x:hover { background: #e81123; color: #fff; }
+.ebar {
+    display: flex; align-items: center; gap: 9px; padding: 7px 12px;
+    background: #f3f3f3; border-bottom: 1px solid #e2e2e2;
+}
+.ebar .nav { display: flex; gap: 4px; color: #555; }
+.ebar .nav b { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; font-weight: 400; font-size: 14px; cursor: pointer; }
+.ebar .nav b:hover { background: #e5e5e5; }
+.eurl {
+    flex: 1; background: #fff; border: 1px solid #dcdcdc; border-radius: 16px;
+    padding: 4px 12px; font-size: 12px; color: #444; display: flex; align-items: center; gap: 6px;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.eurl u { text-decoration: none; color: #1a7f37; }
+.ebody { padding: 26px 30px 24px; text-align: center; }
+.elogo { width: 62px; height: 62px; margin: 0 auto 14px; }
+.ebody h1 { font-size: 19px; font-weight: 600; margin-bottom: 8px; }
+.ebody .ec { font-size: 12.5px; color: #666; line-height: 1.85; }
+.ebody .ec b { color: #c42b1c; font-family: ui-monospace, Consolas, monospace; }
+.eqwrap {
+    width: 158px; height: 158px; margin: 16px auto 10px; padding: 8px;
+    border: 1px solid #e2e2e2; border-radius: 10px; background: #fafafa;
+}
+.eqwrap canvas { width: 142px; height: 142px; display: block; }
+.etip { font-size: 12px; color: #666; }
+.eacts { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+.eacts button {
+    padding: 8px 20px; border-radius: 5px; font: 13px inherit; cursor: pointer; border: 1px solid #cfcfcf;
+    background: #fff; color: #1b1b1f;
+}
+.eacts button.pri { background: #0f6cbd; border-color: #0f6cbd; color: #fff; }
+.enote { margin-top: 18px; font-size: 10.5px; color: #9a9aa2; border-top: 1px dashed #e6e6e6; padding-top: 10px; }
+@media (max-width: 420px){
+    .ebody { padding: 20px 18px 18px; }
+    .elogo { width: 52px; height: 52px; }
+    .ebody h1 { font-size: 17px; }
+}
 </style>
 </head>
 <body>
@@ -269,6 +369,59 @@
         </div>
     </div>
     <div class="locknote">demo &middot; no payment is processed &middot; press ESC to exit</div>
+</div>
+
+<!-- Windows 经典弹窗风暴容器 -->
+<div id="popups" aria-hidden="true"></div>
+
+<!-- 伪装 Edge 的"组件缺失"错误页 -->
+<div id="edgep" aria-hidden="true">
+    <div class="ewin">
+        <svg width="0" height="0" style="position:absolute">
+            <defs>
+                <linearGradient id="eggrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#4de0f5"/>
+                    <stop offset=".45" stop-color="#1180d6"/>
+                    <stop offset="1" stop-color="#0b4ea2"/>
+                </linearGradient>
+                <symbol id="elogo" viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="31" fill="url(#eggrad)"/>
+                    <path d="M32 13c10.5 0 19 8.5 19 19 0 8.4-5.4 15.5-13 18.1-1.6.6-3.3.9-5 .9-4.4 0-8-3.6-8-8s3.6-8 8-8c5.5 0 10 4.5 10 10" fill="none" stroke="#fff" stroke-width="5.4" stroke-linecap="round" opacity=".95"/>
+                    <path d="M14 40c1.6-9.4 8.6-16.6 17.4-18.4" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+                </symbol>
+            </defs>
+        </svg>
+        <div class="etabs">
+            <div class="etab">
+                <svg width="17" height="17"><use href="#elogo"/></svg>
+                <i>浏览器组件错误 - Microsoft Edge</i>
+            </div>
+            <div class="esp"></div>
+            <div class="ectl">
+                <b>&#8212;</b><b>&#9633;</b><b class="x" id="ex">&#10005;</b>
+            </div>
+        </div>
+        <div class="ebar">
+            <div class="nav"><b>&#8249;</b><b>&#8250;</b><b>&#8635;</b></div>
+            <div class="eurl"><u>&#128274;</u>https://www.microsoft.com/zh-cn/edge/runtime-repair</div>
+        </div>
+        <div class="ebody">
+            <svg class="elogo"><use href="#elogo"/></svg>
+            <h1>浏览器出现未知错误</h1>
+            <div class="ec">
+                组件缺失：<b>msedge_webview2_runtime.dll</b><br>
+                错误代码：<b>0x8007007E</b> · STATUS_PROCEDURE_NOT_FOUND<br>
+                导致此问题的原因可能是运行时组件被第三方程序修改或损坏。
+            </div>
+            <div class="eqwrap"><canvas id="eqr" width="142" height="142"></canvas></div>
+            <div class="etip">请使用手机扫描上方二维码，重新下载 Microsoft Edge</div>
+            <div class="eacts">
+                <button type="button" class="pri" id="edl">重新下载 Edge</button>
+                <button type="button" id="elater">稍后提醒我</button>
+            </div>
+            <div class="enote">本页为演示内容 &middot; 二维码不含任何下载或支付地址 &middot; 点右上角 &times; 或「稍后提醒我」关闭</div>
+        </div>
+    </div>
 </div>
 
 <div id="final">
@@ -1235,7 +1388,12 @@ window.addEventListener('keydown', function(e){
     if (e.key === 'Escape'){ e.preventDefault(); showFinal(); return; }
     skip();
 });
-window.addEventListener('pointerdown', function(e){ if (e.target && e.target.id === 'mute') return; skip(); });
+window.addEventListener('pointerdown', function(e){
+    if (e.target && e.target.id === 'mute') return;
+    /* 在弹窗或 Edge 页上操作不是"跳过" */
+    if (e.target && e.target.closest && e.target.closest('.wpop, #edgep')) return;
+    skip();
+});
 function showFinal(){
     clearInterval(LOCK.timer); clearInterval(LOCK.clock);
     document.getElementById('boot').style.display = 'none';
@@ -1437,6 +1595,10 @@ async function run(){
         ['    電量    :: ' + (R.batt || 'n/a'), '']
     ], {prompt: P2, speed: 58, latency: 420});
     setPct(65);
+    await out('[!] renderer process crashed :: 0x8007007E', 'err');
+    if (skipped) return;
+    await showEdge();          /* 浏览器"崩了"，弹出伪装 Edge 的组件缺失页 */
+    if (skipped) return;
     await cmd('./ggb --probe fingerprint', [
         ['    畫布指紋 :: ' + R.canvas, ''],
         ['    字體    :: ' + R.fonts, ''],
@@ -1505,6 +1667,13 @@ async function run(){
     setPct(96);
 
     if (skipped) return;
+    /* 内核载荷落地 -> 系统开始不稳定，经典弹窗风暴 */
+    await typeLine('[!] kernel payload active :: 系统开始抛出异常', 'err');
+    await popStorm();
+    if (skipped) return;
+    await typeLine('[✓] 弹窗抑制完成 :: suppression ok', 'dim');
+
+    if (skipped) return;
     /* ---------- 第七幕：装后脚本 ---------- */
     setPhase('STAGE-7 HOOKS');
     await typeLine('', '');
@@ -1523,6 +1692,134 @@ async function run(){
     await wait(900);
     if (!skipped){ skipped = true; showLock(); }
 }
+/* ---------- Windows 经典错误提示音（Web Audio 合成，无外部文件） ---------- */
+function ding(){
+    if (!soundOn) return;
+    try{
+        if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+        if (AC.state === 'suspended') AC.resume();
+        var t0 = AC.currentTime, g = AC.createGain();
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.2, t0 + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.34);
+        g.connect(AC.destination);
+        /* 两个略不和谐的正弦叠加 + 极快衰减 —— 就是那个"噔" */
+        [[762, 1], [1013, .48]].forEach(function(pr){
+            var o = AC.createOscillator(), og = AC.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(pr[0], t0);
+            o.frequency.exponentialRampToValueAtTime(pr[0] * .93, t0 + .3);
+            og.gain.value = pr[1];
+            o.connect(og); og.connect(g);
+            o.start(t0); o.stop(t0 + .38);
+        });
+    }catch(e){}
+}
+
+/* ---------- 弹窗风暴：从左上角一路叠到右下角 ---------- */
+var POPMSGS = [
+    ['Windows - 应用程序错误', '0x7c918fea 指令引用的 0x00000000 内存。该内存不能为 written。'],
+    ['Microsoft Edge 已停止工作', '出现了一个问题，导致该程序无法正常工作。请关闭该程序。'],
+    ['explorer.exe - 无法找到组件', '没有找到 msedge_webview2_runtime.dll，因此这个应用程序未能启动。重新安装应用程序可能会修复此问题。'],
+    ['系统错误', '应用程序发生异常 unknown software exception (0xc0000409)，位置为 0x00571a3c。'],
+    ['Runtime Error!', 'Program: C:\\Program Files\\ggb\\loader.exe\n\nThis application has requested the Runtime to terminate it in an unusual way.'],
+    ['Windows 安全中心', '检测到可疑行为：ggb_loader.exe 正在修改受保护的系统文件。'],
+    ['Windows - 虚拟内存不足', '您的系统虚拟内存不足。Windows 会增加虚拟内存页面文件的大小。'],
+    ['Windows - 损坏的映像', '应用程序或 DLL C:\\Windows\\System32\\ggb.dll 为无效的 Windows 映像。请再检测一遍您的安装盘。']
+];
+function esc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function popStorm(){
+    return new Promise(function(res){
+        var host = document.getElementById('popups');
+        var BW = 296, BH = 138, N = 22, i = 0, alive = [], dead = false;
+        var vw0 = window.innerWidth, vh0 = window.innerHeight;
+        var STX = Math.max(6, (vw0 - BW - 30) / (N - 1)), STY = Math.max(6, (vh0 - BH - 30) / (N - 1));
+        var x = 12, y = 12;
+        var ICON = '<svg class="wic" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#e81123"/>' +
+                   '<path d="M11 11l10 10M21 11L11 21" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>';
+        function close(d){
+            return function(){
+                if (!d.parentNode) return;
+                d.classList.add('gone');
+                setTimeout(function(){ if (d.parentNode) d.parentNode.removeChild(d); }, 190);
+                var k = alive.indexOf(d); if (k >= 0) alive.splice(k, 1);
+            };
+        }
+        function spawn(){
+            if (dead || alive.length >= 26) return;
+            var m = POPMSGS[i++ % POPMSGS.length];
+            var d = document.createElement('div');
+            d.className = 'wpop';
+            d.innerHTML = '<div class="wtb"><span>' + esc(m[0]) + '</span>' +
+                '<button class="wx" type="button">\u2715</button></div>' +
+                '<div class="wbd">' + ICON + '<div class="wtx">' + esc(m[1]) + '</div></div>' +
+                '<div class="wft"><button type="button">\u786e\u5b9a</button>' +
+                (i % 3 === 0 ? '<button type="button">\u53d6\u6d88</button>' : '') + '</div>';
+            d.style.left = x + 'px'; d.style.top = y + 'px';
+            host.appendChild(d); alive.push(d);
+            ding();
+            var f = close(d);
+            d.querySelector('.wx').addEventListener('click', f);
+            var bs = d.querySelectorAll('.wft button');
+            for (var b = 0; b < bs.length; b++) bs[b].addEventListener('click', f);
+            /* 步长按屏幕算：让这一批正好从左上角铺到右下角，
+               硬编码 27/21 在宽屏上只能走一半，看着不像"铺满" */
+            x += STX; y += STY;
+            var vw = window.innerWidth, vh = window.innerHeight;
+            if (x + BW > vw - 8 || y + BH > vh - 8){ x = 12 + (i % 4) * 11; y = 12 + (i % 3) * 8; }
+        }
+        spawn();
+        var iv = setInterval(spawn, ms(370));
+        /* 硬上限：恶作剧不能真把人困住 */
+        setTimeout(function(){
+            dead = true; clearInterval(iv);
+            alive.forEach(function(d){ d.classList.add('gone'); });
+            setTimeout(function(){ host.innerHTML = ''; res(); }, 220);
+        }, ms(8200));
+    });
+}
+
+/* ---------- 伪装 Edge 的"组件缺失"页 ---------- */
+function showEdge(){
+    return new Promise(function(res){
+        var box = document.getElementById('edgep');
+        try{
+            var url = baseURL() + 'xxx.html?e=' + (Math.floor(Math.random() * 9000) + 1000);
+            var cv = document.getElementById('eqr'), ctx = cv.getContext('2d');
+            var dpr = window.devicePixelRatio || 1, css = 142;
+            cv.width = css * dpr; cv.height = css * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, css, css);
+            var q = QR.build(url, 'M');
+            if (q){
+                var n = q.size, qz = 3, total = n + qz * 2, sc = css / total;
+                ctx.fillStyle = '#0b0b0b';
+                for (var r = 0; r < n; r++) for (var c = 0; c < n; c++)
+                    if (q.modules[r][c]) ctx.fillRect((c + qz) * sc, (r + qz) * sc, sc + 0.6, sc + 0.6);
+            }
+        }catch(e){}
+        box.classList.add('on');
+        box.setAttribute('aria-hidden', 'false');
+        ding();
+        var done = false, tm = null;
+        function fin(){
+            if (done) return; done = true;
+            clearTimeout(tm);
+            box.classList.remove('on');
+            box.setAttribute('aria-hidden', 'true');
+            res();
+        }
+        tm = setTimeout(fin, ms(5800));
+        document.getElementById('ex').onclick = fin;
+        document.getElementById('elater').onclick = fin;
+        document.getElementById('edl').onclick = function(){
+            var tip = document.querySelector('#edgep .etip');
+            if (tip){ tip.style.color = '#c42b1c'; tip.textContent = '\u65e0\u6cd5\u6253\u5f00\u5e94\u7528\u5546\u5e97 \u00b7 \u9519\u8bef 0x8007007E'; }
+            clearTimeout(tm); tm = setTimeout(fin, ms(1900));
+        };
+    });
+}
+
 run().catch(function(){ if (!skipped){ skipped = true; setPct(100); showLock(); } });
 </script>
 </body>
