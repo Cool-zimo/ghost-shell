@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>...</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        background: #050505; color: #00ff41; min-height: 100vh;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New",
+                     "Microsoft YaHei", "PingFang SC", monospace;
+        font-size: 13px; line-height: 1.75; padding: 22px 18px 40px;
+    }
+    .wrap { max-width: 680px; margin: 0 auto; }
+    .ln { opacity: 0; animation: in .5s forwards; white-space: pre-wrap; word-break: break-word; }
+    @keyframes in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .c { color: #00bfff; }
+    .g { color: #00ff41; }
+    .d { color: #0a7a24; }
+    .r { color: #ff3b30; }
+    .w { color: #ffb000; }
+    .m { color: #b48ead; }
+    .big { font-size: 15px; color: #fff; margin: 18px 0 10px; }
+    .gap { height: 14px; }
+    .ind { padding-left: 16px; }
+    #go {
+        display: block; margin: 30px auto 0; padding: 12px 30px; font: inherit; font-size: 13px;
+        border-radius: 10px; border: 1px solid #0d5a20; background: #071a0b; color: #0a7a24; cursor: not-allowed;
+        opacity: 0; transition: opacity .4s, color .3s, border-color .3s;
+    }
+    #go.ready { opacity: 1; color: #00ff41; border-color: #00ff41; cursor: pointer; }
+    #go.ready:hover { background: #0b2a12; }
+
+    #fin { display: none; position: fixed; inset: 0; background: #0a0a0a; flex-direction: column;
+           justify-content: center; align-items: center; text-align: center; overflow: hidden; }
+    #fin.on { display: flex; }
+    /* 0.4s ≈ 2.5Hz，低于光敏性癫痫 3Hz 安全线 */
+    .glitch { font-size: 48px; font-weight: bold; color: #ff0000; text-shadow: 0 0 10px #ff0000, 0 0 40px #ff0000;
+              animation: fl .4s infinite; }
+    @keyframes fl { 0%,100%{opacity:1;} 50%{opacity:.82;} 25%{transform:skewX(2deg);} 75%{transform:skewX(-2deg);} }
+    .sub { color: #00ff00; font-size: 16px; margin-top: 22px; text-shadow: 0 0 5px #00ff00; }
+    .hint { position: fixed; bottom: 12px; width: 100%; text-align: center; color: #555; font-size: 11px; }
+    @media (max-width: 620px){ body { font-size: 12px; padding: 18px 14px 34px; } .glitch { font-size: 34px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="doc">
+    <div class="ln c">&gt; scan complete</div>
+    <div class="ln c">&gt; decoding payload ...</div>
+
+    <div class="gap"></div>
+    <div class="ln g big">你扫的不是付款码。是一个网址。</div>
+    <div class="ln d">这整场「入侵」，没有一行是真的。</div>
+
+    <div class="gap"></div>
+    <div class="ln r">主机名 DESKTOP-XXXX   → 随机生成的</div>
+    <div class="ln r">uid=0 / root          → 写死的</div>
+    <div class="ln r">内核地址 0x7FFE3A1C   → 随机数</div>
+    <div class="ln r">delete 文件系統       → 没执行，也不会执行</div>
+    <div class="ln r">麦克风「已接管」      → 只申请了权限，拿到就关掉了</div>
+    <div class="ln r">提权失败 / 重试 / 绕过 → 剧本</div>
+
+    <div class="gap"></div>
+    <div class="ln g big">但下面这些，是真的：</div>
+    <div class="ln w ind">你的屏幕分辨率、CPU 核心数、电量</div>
+    <div class="ln w ind">你用的浏览器、语言、时区</div>
+    <div class="ln w ind">你的公网 IP（WebRTC 泄漏出来的）</div>
+    <div class="ln w ind">你设备上叫得出名字的扬声器、麦克风、摄像头</div>
+    <div class="ln w ind">13 项权限里，哪些给了、哪些没给</div>
+
+    <div class="gap"></div>
+    <div class="ln g">没有一条需要「入侵」。</div>
+    <div class="ln g">每个网站都能读到。</div>
+    <div class="ln d">浏览器把它们交给了每一个来访者——</div>
+    <div class="ln d">只换了层皮，就成了「黑客」。</div>
+
+    <div class="gap"></div>
+    <div class="ln c">&gt; so ...</div>
+    <div class="ln m">&gt; you scanned a QR code. that's it.</div>
+
+    <button id="go" type="button">继续 →</button>
+</div>
+
+<div id="fin">
+    <div class="glitch">YOU GOT HACKED</div>
+    <div class="sub">system compromised // access granted</div>
+    <div class="hint">close the tab to leave &middot; 这是个演示页面</div>
+</div>
+
+<script>
+"use strict";
+var lines = document.querySelectorAll('#doc .ln');
+var STEP = 340, DUR = 520;
+var total = lines.length * STEP + DUR;
+for (var i = 0; i < lines.length; i++) lines[i].style.animationDelay = (i * STEP) + 'ms';
+setTimeout(function(){ document.getElementById('go').classList.add('ready'); }, total);
+document.getElementById('go').addEventListener('click', function(){
+    document.getElementById('doc').style.display = 'none';
+    document.getElementById('fin').classList.add('on');
+});
+</script>
+</body>
+</html>
