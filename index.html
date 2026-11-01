@@ -32,13 +32,35 @@
         color: var(--gdim); font-size: 10.5px; letter-spacing: .4px;
         border-bottom: 1px solid #0d2a12; padding-bottom: 5px; margin-bottom: 8px; flex: 0 0 auto;
     }
+    /* 终端窗口外壳：标题栏 + 三色圆点 */
+    .ttybar {
+        flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+        padding: 5px 8px 6px; margin: -2px -6px 7px;
+        background: #071b0c; border: 1px solid #0d2a12; border-radius: 5px 5px 0 0;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+    .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+    .ttytitle { flex: 1 1 auto; text-align: center; color: var(--gdim); font-size: 10.5px; letter-spacing: .3px; }
+    /* CRT 扫描线 + 暗角 */
+    .crt {
+        position: fixed; inset: 0; z-index: 2; pointer-events: none;
+        background:
+            radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%),
+            repeating-linear-gradient(0deg, rgba(0,0,0,.13) 0px, rgba(0,0,0,.13) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px);
+        mix-blend-mode: multiply;
+    }
+    .crt.off { display: none; }
+    /* 文字辉光：真终端荧光屏的晕散 */
+    #boot, #final { text-shadow: 0 0 4px rgba(0,255,90,.28); }
     #head b { color: var(--g); font-weight: 600; }
     #mute { background: none; border: 1px solid #0d2a12; color: var(--gdim); font: inherit; font-size: 10px; padding: 1px 7px; border-radius: 3px; cursor: pointer; }
     #mute:hover { color: var(--g); border-color: var(--gdim); }
     #lines { flex: 1 1 auto; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 6px; }
     /* flex 列布局下子项默认 flex-shrink:1，行一多就会被等比压扁（77行时行高被压到 9.6px）。
        这里锁死不收缩，超出容器的老行从顶部溢出被裁掉，正是终端要的滚动效果 */
-    .ln { display: flex; align-items: baseline; white-space: pre; overflow: hidden; text-overflow: clip; flex: 0 0 auto; }
+    /* pre-wrap + break-all：真终端是硬折行，不是把超宽部分裁掉 */
+    .ln { display: flex; align-items: baseline; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-all; overflow: hidden; flex: 0 0 auto; }
+    .ln.blk { display: block; }
     .ok   { color: var(--g); }
     .inf  { color: var(--c); }
     .warn { color: var(--w); }
@@ -47,6 +69,13 @@
     .mag  { color: var(--m); }
     .k    { color: var(--c); }
     .v    { color: var(--g); }
+    /* ls 彩色：目录蓝 / 可执行绿 / 隐藏文件灰 / 图片紫 */
+    .fd { color: #5fa8ff; } .fx { color: #4fe05a; } .fh { color: var(--gdim); }
+    .fi { color: var(--m); } .fa { color: #ffd479; }
+    /* grep 高亮 */
+    .hl { background: rgba(0,255,90,.22); color: #eafff0; }
+    /* 不可见控制字符（Tab、Ctrl+C）用反显表示，真终端也是这么画的 */
+    .ctl { background: rgba(0,255,90,.16); color: #baffc8; }
     /* 左栏吃掉剩余空间、超长自动省略；进度条固定在最右同一列，
        不再靠 padR 补空格对齐（CJK 宽度各机型不同，补空格必然错位） */
     .pn { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -145,9 +174,15 @@
 
 <canvas class="matrix"></canvas>
 
+<div class="crt" id="crt"></div>
+
 <div id="boot">
+    <div class="ttybar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="ttytitle" id="ttytitle">root@kali: ~ — ssh root@target — 80×24</span>
+    </div>
     <div id="head">
-        <span><b>ghost-shell</b> · pacman v7.0.1 · remote session</span>
+        <span><b>ghost-shell</b> · pip 24.2 · remote session</span>
         <button id="mute" type="button">sound: on</button>
     </div>
     <div id="lines"></div>
@@ -484,6 +519,180 @@ async function pipDl(whl, sizeTxt, total, unit, speed, eta, cls){
     await out('  Downloading ' + whl + ' (' + sizeTxt + ')', cls || 'dim');
     await wait(60);
     await pipBar(total, unit, speed, eta);
+}
+
+/* esc：文件名/主机名等采集值可能含 < &，进 innerHTML 前必须转义 */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* 带内联 HTML 的行（ls 彩色、grep 高亮用） */
+function mkHTML(html, cls){
+    var ln = mk(cls || '');
+    ln.innerHTML = html; scroll();
+    return ln;
+}
+
+/* ------------------------------------------------------------------
+   \r 覆盖式进度条
+   真 pip/rich 是同一行反复覆盖刷新，不是每帧新起一行。
+   一眼真的关键是：速度每帧抖动、偶发小幅回退（网络顿挫）。
+------------------------------------------------------------------- */
+async function pipLive(whl, sizeTxt, total, unit, cls){
+    await out('  Downloading ' + whl + ' (' + sizeTxt + ')', cls || 'dim');
+    await wait(150);
+    var ln = mk('ok');
+    var sp = document.createElement('span'); sp.className = 'pn'; sp.textContent = '     ';
+    var bar = mkBar(PIPW);
+    var nm = document.createElement('span'); nm.className = 'pnum';
+    ln.appendChild(sp); ln.appendChild(bar.el); ln.appendChild(nm);
+    var v = 0, frames = NARROW ? 12 : 20, base = total * 1.15;
+    function fmt(s){ s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+    function paint(spd){
+        var p = Math.min(1, v / total);
+        bar.fill.style.width = Math.round(PIPW * p) + 'px';
+        var sTxt = spd >= 1024 ? (spd / 1024).toFixed(1) + ' MB/s' : Math.round(spd) + ' kB/s';
+        nm.textContent = ' ' + v.toFixed(1) + '/' + total.toFixed(1) + ' ' + unit + ' ' +
+                         sTxt + ' eta ' + (p >= 1 ? '0:00:00' : fmt((total - v) / (spd || 1)));
+    }
+    paint(base * 0.2); scroll();
+    for (var i = 1; i <= frames; i++){
+        await wait(30 + Math.random() * 55);
+        if (skipped){ v = total; paint(base); return; }
+        var step = total / frames * (0.5 + Math.random() * 1.0);
+        if (Math.random() < 0.13 && v > total * 0.12) step *= -0.3;   /* 顿一下往回缩 */
+        v = Math.max(0, Math.min(total, v + step));
+        paint(base * (0.35 + Math.random() * 0.9));
+        beep();
+    }
+    v = total; paint(base);
+}
+
+/* ------------------------------------------------------------------
+   终端交互：Tab 补全 / Ctrl+C / 上箭头翻历史
+   这三类是"用熟了终端的人"的肌肉记忆，缺了就像在放录像
+------------------------------------------------------------------- */
+/* 敲 prefix → 按 Tab（反显）→ 补全成 full → 回车 */
+async function tabComplete(prompt, prefix, full, outs, opts){
+    opts = opts || {};
+    await humanType(prefix, {prompt: prompt, speed: opts.speed || 58, typo: opts.typo != null ? opts.typo : 0.1});
+    var ln = box.lastChild;
+    var ty = ln.querySelector('.ty');
+    await wait(220 + Math.random() * 260);
+    var tab = document.createElement('span'); tab.className = 'ctl'; tab.textContent = '⇥';
+    ln.insertBefore(tab, ln.querySelector('.cur'));
+    beep(); scroll();
+    await wait(130 + Math.random() * 200);
+    tab.remove();
+    var rest = full.slice(prefix.length);
+    for (var i = 0; i < rest.length; i++){ ty.textContent += rest.charAt(i); await wait(14); }
+    scroll();
+    await wait(150 + Math.random() * 260);
+    if (ln.querySelector('.cur')) ln.querySelector('.cur').remove();
+    if (!outs) return;
+    for (var j = 0; j < outs.length; j++){
+        if (skipped) return;
+        await out(outs[j][0], outs[j][1]);
+        await wait(35 + Math.random() * 90);
+    }
+}
+/* 上箭头翻出历史命令：显示 ^[[A，整行被历史命令替换 */
+async function historyRecall(prompt, histCmd, outs, opts){
+    opts = opts || {};
+    var ln = mk('ok');
+    var ps = document.createElement('span'); ps.className = 'pr'; ps.textContent = prompt;
+    var ts = document.createElement('span'); ts.className = 'ty';
+    ln.appendChild(ps); ln.appendChild(ts);
+    await wait(200);
+    var up = document.createElement('span'); up.className = 'ctl'; up.textContent = '^[[A';
+    ln.appendChild(up); scroll(); beep();
+    await wait(260 + Math.random() * 260);
+    up.remove(); ts.textContent = histCmd; scroll();
+    await wait(180 + Math.random() * 220);
+    if (!outs) return;
+    for (var j = 0; j < outs.length; j++){
+        if (skipped) return;
+        await out(outs[j][0], outs[j][1]);
+        await wait(35 + Math.random() * 90);
+    }
+}
+/* 命令卡住 → Ctrl+C 中断 */
+async function ctrlC(prompt, text, opts){
+    opts = opts || {};
+    await humanType(text, {prompt: prompt, speed: opts.speed || 60, typo: 0.08});
+    var ln = box.lastChild;
+    /* 光标原地闪：命令在跑但没输出，这是最像"卡住"的状态 */
+    await wait(opts.hang || 1800);
+    for (var i = 0; i < 3; i++){ await wait(420); beep(); }
+    var cc = document.createElement('span'); cc.className = 'ctl'; cc.textContent = '^C';
+    ln.appendChild(cc); scroll();
+    await wait(300);
+    if (ln.querySelector('.cur')) ln.querySelector('.cur').remove();
+}
+
+/* ------------------------------------------------------------------
+   neofetch：ASCII logo + 右侧真信息
+------------------------------------------------------------------- */
+/* 11 行"眼睛"图案：██ 实心 + ░░ 留白，等宽下宽度一致 */
+var LOGO = ['   ████████████████  ',
+            '  ██████████████████ ',
+            ' ██████░░░░░░███████ ',
+            ' ████░░░░░░░░░░█████ ',
+            ' ███░░░██████░░░████ ',
+            ' ███░░████████░░████ ',
+            ' ███░░████████░░████ ',
+            ' ███░░░██████░░░████ ',
+            ' ████░░░░░░░░░░█████ ',
+            ' ██████░░░░░░███████ ',
+            '  ██████████████████ '];
+async function neofetch(prompt){
+    await wait(240);
+    /* 每项 [key, value]；key 为空则整行只输出 value（root@host、分隔线） */
+    var info = [
+        ['', 'root@' + R.host],
+        ['', '-------------------'],
+        ['OS', 'Linux x86_64'],
+        ['Host', R.host + ' · ' + R.cores + ' cores'],
+        ['Kernel', '6.1.0-18-amd64'],
+        ['Shell', 'bash 5.2.15'],
+        ['Resolution', R.screen],
+        ['Browser', R.br.length > 42 ? R.br.slice(0, 42) : R.br],
+        ['GPU', (R.gpu || 'n/a').slice(0, 34)],
+        ['Memory', R.mem + ' total'],
+        ['Battery', R.batt || 'n/a']
+    ];
+    var n = Math.max(LOGO.length, info.length);
+    for (var i = 0; i < n; i++){
+        if (skipped) return;
+        var ln = mk('ok');
+        if (!NARROW){
+            var l = document.createElement('span'); l.className = 'pr';
+            l.style.flex = '0 0 auto';
+            l.textContent = LOGO[i] || rep(' ', LOGO[0].length);
+            ln.appendChild(l);
+        }
+        var it = info[i];
+        var r1 = document.createElement('span');
+        if (it && it[0]){
+            r1.className = 'k'; r1.textContent = '  ' + it[0] + ': ';
+            var r2 = document.createElement('span'); r2.className = 'v';
+            r2.textContent = it[1] || '';
+            ln.appendChild(r1); ln.appendChild(r2);
+        } else {
+            r1.className = 'v'; r1.textContent = '  ' + ((it && it[1]) || '');
+            ln.appendChild(r1);
+        }
+        scroll();
+        await wait(75);
+    }
+}
+
+/* ls --color：权限/大小保持默认色，只有文件名上色 —— 真 ls 就这样 */
+async function lsColor(entries){
+    await wait(200);
+    for (var i = 0; i < entries.length; i++){
+        if (skipped) return;
+        var e = entries[i];
+        mkHTML(esc(e[0]) + '<span class="' + e[2] + '">' + esc(e[1]) + '</span>', '');
+        await wait(60 + Math.random() * 70);
+    }
 }
 /* 子步骤 "... done" */
 async function pipStep(text, cls){
@@ -1020,15 +1229,15 @@ async function run(){
     await wait(200);
     await out('', '');
     await out('Collecting GGB蠕虫installing.js.happy.AprilFoolDay', 'inf');
-    await pipDl('GGB蠕虫installing.js.happy.AprilFoolDay-1.4-py3-none-any.whl', '1.4 kB', 1.4, 'kB', '404 kB/s', '0:00:00', 'mag');
+    await pipLive('GGB蠕虫installing.js.happy.AprilFoolDay-1.4-py3-none-any.whl', '1.4 kB', 1.4, 'kB', 'mag');
     setPct(11);
     await out('Collecting ggb-loader', 'inf');
-    await pipDl('ggb_loader-0.8.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl', '910 kB', 910.2, 'kB', '5.1 MB/s', '0:00:00');
+    await pipLive('ggb_loader-0.8.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl', '910 kB', 910.2, 'kB');
     setPct(15);
     await out('Requirement already satisfied: requests<3,>=2.31.0 in /usr/lib/python3/dist-packages (2.31.0)', 'dim');
     await out('Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3/dist-packages (1.26.18)', 'dim');
     await out('Collecting c2-beacon', 'inf');
-    await pipDl('c2_beacon-2.1.0.tar.gz', '308 kB', 308.8, 'kB', '2.4 MB/s', '0:00:00');
+    await pipLive('c2_beacon-2.1.0.tar.gz', '308 kB', 308.8, 'kB');
     setPct(19);
     await pipStep('Preparing metadata (setup.py)');
     await out('Building wheels for collected packages: c2-beacon', '');
@@ -1045,11 +1254,16 @@ async function run(){
     setPct(23);
     await wait(300);
     await out('Successfully installed GGB蠕虫installing.js.happy.AprilFoolDay-1.4 c2-beacon-2.1.0 ggb-loader-0.8.2', 'ok');
+    await wait(200);
+    await out('', '');
+    await out('[notice] A new release of pip is available: 24.2 -> 25.0', 'dim');
+    await out('[notice] To update, run: python3 -m pip install --upgrade pip', 'dim');
     setPct(26);
 
     if (skipped) return;
     /* ---------- 第二幕：回连 + SSH 登陆 ---------- */
     setPhase('STAGE-2 BREACH');
+    document.getElementById('ttytitle').textContent = 'root@kali: ~ — pip install — 80×24';
     await wait(400);
     await typeLine('', '');
     await typeLine('[*] 蠕虫已落地 :: 正在回连 C2 控制端', 'inf');
@@ -1068,19 +1282,30 @@ async function run(){
     setPct(31);
 
     if (skipped) return;
-    /* 密码：不回显，敲成星号 */
-    var pwln = mk('ok');
-    var pwps = document.createElement('span'); pwps.className = 'pr'; pwps.textContent = "root@" + tgt + "'s password: ";
-    var pwts = document.createElement('span'); pwts.className = 'ty';
-    var pwcu = document.createElement('span'); pwcu.className = 'cur'; pwcu.textContent = ' ';
-    pwln.appendChild(pwps); pwln.appendChild(pwts); pwln.appendChild(pwcu);
-    var pw = 'P@ssw0rd!2024';
-    for (var pi = 0; pi < pw.length; pi++){
-        if (skipped) break;
-        pwts.textContent += '*'; beep(); scroll();
-        await wait(70 + Math.random() * 110);
+    /* 密码：不回显。第一次故意输错——真 ssh 不会一次就进，
+       而且"打错密码"比"一次成功"可信得多 */
+    async function typePwd(str){
+        var ln = mk('ok');
+        var ps = document.createElement('span'); ps.className = 'pr';
+        ps.textContent = "root@" + tgt + "'s password: ";
+        var ts = document.createElement('span'); ts.className = 'ty';
+        var cu = document.createElement('span'); cu.className = 'cur'; cu.textContent = ' ';
+        ln.appendChild(ps); ln.appendChild(ts); ln.appendChild(cu);
+        for (var i = 0; i < str.length; i++){
+            if (skipped) break;
+            ts.textContent += '*'; beep(); scroll();
+            await wait(65 + Math.random() * 105);
+        }
+        await wait(280 + Math.random() * 260); cu.remove();
+        return ln;
     }
-    await wait(300); pwcu.remove();
+    await typePwd('Passw0rd!2024');          /* 少了 @，错的 */
+    await wait(400);
+    await out('Permission denied, please try again.', 'err');
+    await wait(700);
+    if (skipped) return;
+    await typePwd('P@ssw0rd!2024');          /* 这次对了 */
+    await wait(500);
     await out('', '');
     await out('Linux ' + H + ' 6.1.0-18-amd64 #1 SMP PREEMPT_DYNAMIC x86_64', 'dim');
     await out('Last login: ' + new Date(Date.now() - 86400000).toUTCString() + ' from 45.13.77.4', 'dim');
@@ -1090,12 +1315,19 @@ async function run(){
     if (skipped) return;
     /* ---------- 第三幕：入侵者手工敲命令 ---------- */
     setPhase('STAGE-3 RECON');
+    document.getElementById('ttytitle').textContent = 'root@' + H + ': ~ — ssh — 80×24';
     await wait(500);
     await cmd('whoami', [['root', 'ok']], {prompt: P2, speed: 46});
     await cmd('id', [['uid=0(root) gid=0(root) groups=0(root),1(daemon),44(video)', 'ok']], {prompt: P2, speed: 54});
+    setPct(39);
+    /* Tab 补全：敲 neof → 按 Tab → 补全 neofetch。用过终端的人都会这么干 */
+    await tabComplete(P2, 'neof', 'neofetch', null, {speed: 50});
+    await neofetch(P2);
+    setPct(45);
+    await wait(500);
     await cmd('uname -a', [['Linux ' + H + ' 6.1.0-18-amd64 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux', '']
         ], {prompt: P2, speed: 50});
-    setPct(41);
+    setPct(48);
     /* 打错：cat /etc/passwrd → 退格 → passwd */
     await cmd('cat /etc/passwd', [
         ['root:x:0:0:root:/root:/bin/bash', ''],
@@ -1105,17 +1337,41 @@ async function run(){
     await cmd('ip -br addr show', [
         ['lo               UNKNOWN        127.0.0.1/8', 'dim'],
         ['eth0             UP            ' + tgt + '/24', ''],
-        ['wlan0            UP            ' + (R.lan || '10.0.0.7') + '/20', '']
+        ['wlan0            UP            ' + tgt.replace(/\.\d+$/, '.' + (200 + Math.floor(Math.random() * 50))) + '/20', '']
     ], {prompt: P2, speed: 56});
-    setPct(48);
+    setPct(52);
 
     if (skipped) return;
-    await cmd('ls -la /home/coolzimo/', [
-        ['drwxr-xr-x  2 coolzimo coolzimo  4096 桌面', ''],
-        ['drwxr-xr-x  3 coolzimo coolzimo  4096 文档', ''],
-        ['drwxr-xr-x  4 coolzimo coolzimo  4096 学习', 'inf'],
-        ['-rw-------  1 coolzimo coolzimo 12288 .bash_history', 'warn']
-    ], {prompt: P2, speed: 60, typo: 0.1});
+    /* ls --color：目录蓝 / 可执行绿 / 隐藏文件灰 / 图片紫 */
+    await cmd('ls -la /home/coolzimo/', null, {prompt: P2, speed: 58, typo: 0.1});
+    await lsColor([
+        ['drwxr-xr-x  2 coolzimo coolzimo  4096 ', '桌面/',         'fd'],
+        ['drwxr-xr-x  3 coolzimo coolzimo  4096 ', '文档/',         'fd'],
+        ['drwxr-xr-x  4 coolzimo coolzimo  4096 ', '学习/',         'fd'],
+        ['drwx------  3 coolzimo coolzimo  4096 ', '.ssh/',         'fh'],
+        ['-rw-r--r--  1 coolzimo coolzimo  9284 ', '照片.jpg',       'fi'],
+        ['-rwxr-xr-x  1 coolzimo coolzimo  1204 ', 'drive.py',      'fx'],
+        ['-rw-------  1 coolzimo coolzimo 12288 ', '.bash_history', 'fh']
+    ]);
+    setPct(56);
+
+    /* Ctrl+C：命令跑了半天没反应，人就会按掉它 */
+    await wait(600);
+    await ctrlC(P2, 'nmap -sS -p1-65535 ' + tgt, {hang: 2200});
+    await out('  (已中断 :: 全端口扫描太慢了)', 'dim');
+    setPct(58);
+
+    /* 上箭头翻历史 → 回车执行 → grep 命中词高亮 */
+    await wait(500);
+    await historyRecall(P2, 'grep -ni "password" ~/.bash_history', null);
+    await wait(420);
+    mkHTML('41:ssh root@' + esc(tgt) + ' -o PreferredAuthentications=<span class="hl">password</span>', '');
+    await wait(120);
+    mkHTML('88:cat ~/.ssh/<span class="hl">password</span>_note.txt', '');
+    await wait(120);
+    mkHTML('103:export SSHPASS=<span class="hl">password</span>', 'warn');
+    setPct(60);
+
     await cmd('head -20 ~/.bash_history', [
         ['python3 drive.py --upload 学习/', 'dim'],
         ['git push origin main', 'dim'],
@@ -1123,7 +1379,7 @@ async function run(){
         ['ssh root@' + tgt, 'warn'],
         ['cat ~/.ssh/id_ed25519', 'err']
     ], {prompt: P2, speed: 62});
-    setPct(55);
+    setPct(63);
 
     if (skipped) return;
     setPhase('STAGE-4 EXFIL');
@@ -1138,7 +1394,7 @@ async function run(){
         ['    顯卡    :: ' + R.gpu, ''],
         ['    電量    :: ' + (R.batt || 'n/a'), '']
     ], {prompt: P2, speed: 58, latency: 420});
-    setPct(62);
+    setPct(65);
     await cmd('./ggb --probe fingerprint', [
         ['    畫布指紋 :: ' + R.canvas, ''],
         ['    字體    :: ' + R.fonts, ''],
@@ -1150,7 +1406,7 @@ async function run(){
     if (skipped) return;
     await cmd('./ggb --probe network', [
         ['    公網IP  :: ' + (R.pub || 'unavailable'), 'inf'],
-        ['    内網IP  :: ' + (R.lan || 'n/a'), 'inf'],
+        ['    内網IP  :: ' + tgt, 'inf'],
         ['    鏈路    :: ' + R.online + ' :: ' + R.conn, '']
     ], {prompt: P2, speed: 62, latency: 380});
     var dv = await devices();
