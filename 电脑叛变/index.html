@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>无标题 - 记事本</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+        background: #0b1e2b;
+        font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        color: #d8dde2;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ---------- 桌面 ---------- */
+    #desk {
+        position: fixed; inset: 0;
+        background:
+            radial-gradient(120% 90% at 20% 0%, #17415c 0%, #0b1e2b 55%, #071521 100%);
+        display: flex; align-items: center; justify-content: center; padding: 14px;
+    }
+    #desk::after {
+        content: ''; position: absolute; inset: 0; pointer-events: none;
+        background: repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 3px);
+    }
+
+    /* ---------- 记事本窗口 ---------- */
+    .pad {
+        position: relative; width: min(720px, 100%); height: min(520px, calc(100vh - 28px));
+        background: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 8px 8px 0 0;
+        display: flex; flex-direction: column;
+        box-shadow: 0 24px 70px rgba(0,0,0,.55);
+        overflow: hidden;
+    }
+    .tb {
+        display: flex; align-items: center; height: 32px; flex: 0 0 auto;
+        background: #2b2b2b; padding-left: 10px; user-select: none;
+    }
+    .tb .fname { font-size: 12px; color: #ccc; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tb .fname .dot { color: #d83b01; }
+    .tb .wc { display: flex; }
+    .tb .wc b {
+        width: 45px; height: 32px; display: grid; place-items: center;
+        font-weight: 400; font-size: 10px; color: #bbb; cursor: default;
+    }
+    .tb .wc b.x:hover { background: #e81123; color: #fff; }
+
+    .mb { display: flex; gap: 2px; padding: 3px 6px; background: #1f1f1f; border-bottom: 1px solid #2a2a2a; font-size: 12px; flex: 0 0 auto; }
+    .mb span { padding: 3px 9px; color: #cfcfcf; border-radius: 3px; }
+    .mb span:hover { background: #333; }
+
+    #doc {
+        flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 8px 10px 16px;
+        font: 15px/1.75 'Consolas', 'Microsoft YaHei', 'PingFang SC', monospace;
+        color: #e8e8e8; white-space: pre-wrap; word-break: break-all;
+        scrollbar-width: thin; scrollbar-color: #444 #1f1f1f;
+    }
+    #doc::-webkit-scrollbar { width: 10px; }
+    #doc::-webkit-scrollbar-thumb { background: #444; border-radius: 5px; }
+    #doc .c { color: #7ec9ff; }        /* 代码泄露时的高亮 */
+    #doc .g { color: #ff5a4f; }        /* 失控的乱码 */
+    #doc .s { color: #9a9aa2; }
+    .caret {
+        display: inline-block; width: 2px; height: 1.15em; background: #e8e8e8;
+        vertical-align: text-bottom; animation: cb 1.06s steps(1) infinite; margin-left: -1px;
+    }
+    @keyframes cb { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+    .sb {
+        flex: 0 0 auto; display: flex; gap: 18px; padding: 4px 12px 5px;
+        background: #1f1f1f; border-top: 1px solid #2a2a2a; font-size: 11px; color: #9a9aa2;
+    }
+    .sb .r { margin-left: auto; }
+    .pad.shake { animation: shk .45s; }
+    @keyframes shk {
+        0%,100%{transform:translate(0,0)}
+        20%{transform:translate(-2px,1px)}
+        40%{transform:translate(2px,-1px)}
+        60%{transform:translate(-1px,0)}
+        80%{transform:translate(1px,1px)}
+    }
+
+    /* ---------- 输入法候选框（微软拼音观感） ---------- */
+    #ime {
+        position: fixed; z-index: 40; display: none; min-width: 168px; max-width: 300px;
+        background: #fff; color: #1b1b1f; border: 1px solid #b9b9b9; border-radius: 3px;
+        box-shadow: 0 6px 22px rgba(0,0,0,.5); font-size: 14px; overflow: hidden;
+    }
+    #ime.on { display: block; }
+    #ime .py {
+        padding: 3px 9px 2px; font: 13px/1.5 'Consolas', monospace; color: #333;
+        border-bottom: 1px solid #ececec; letter-spacing: .5px; white-space: nowrap; overflow: hidden;
+    }
+    #ime .py .done { color: #000; }
+    #ime .py .rest { color: #9a9aa2; }
+    #ime .cs { padding: 2px 0 3px; }
+    #ime .cs .it { display: flex; align-items: center; gap: 8px; padding: 2px 10px; white-space: nowrap; }
+    #ime .cs .it i { font-style: normal; color: #8a8a8a; font-size: 11px; width: 10px; flex: 0 0 10px; }
+    #ime .cs .it.hi { background: #dbeafe; }
+    #ime .cs .it.hi b { color: #0f6cbd; }
+    #ime .cs .it b { font-weight: 400; }
+    #ime .cs .it u { text-decoration: none; color: #b0b0b0; font-size: 11px; margin-left: auto; }
+    #ime.err { border-color: #d13438; box-shadow: 0 6px 22px rgba(209,52,56,.45); }
+    #ime.jit { animation: jt .12s infinite; }
+    @keyframes jt { 0%,100%{transform:translate(0,0)} 50%{transform:translate(.8px,-.8px)} }
+
+    /* ---------- Windows 安全中心通知 ---------- */
+    #toast {
+        position: fixed; right: 14px; bottom: 14px; z-index: 35; width: 320px; max-width: calc(100vw - 28px);
+        background: #202124; border: 1px solid #3a3a3a; border-radius: 8px; padding: 12px 14px;
+        box-shadow: 0 14px 40px rgba(0,0,0,.6); display: none;
+        font: 12.5px/1.6 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    }
+    #toast.on { display: block; animation: tin .3s; }
+    @keyframes tin { from { transform: translateY(14px); opacity: 0 } }
+    #toast .hd { display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 600; margin-bottom: 5px; }
+    #toast .hd svg { width: 16px; height: 16px; flex: 0 0 16px; }
+    #toast p { color: #b8bcc2; }
+    #toast .kill { color: #ff8a80; margin-top: 6px; display: none; }
+    #toast.dead { border-color: #5a2020; filter: grayscale(.5); }
+    #toast.dead .kill { display: block; }
+
+    /* ---------- 终局 ---------- */
+    #end {
+        position: fixed; inset: 0; z-index: 60; background: #050505; display: none;
+        flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px;
+    }
+    #end.on { display: flex; animation: fin .5s; }
+    @keyframes fin { from { opacity: 0 } }
+    #end h1 { font-size: clamp(30px, 9vw, 62px); color: #ff3b30; letter-spacing: .08em; text-shadow: 0 0 26px rgba(255,59,48,.55); }
+    #end .sub { margin-top: 20px; color: #8a8a92; font-size: 13.5px; line-height: 2; }
+    #end .sub b { color: #d8dde2; font-weight: 600; }
+    #end .hint { margin-top: 26px; font-size: 11px; color: #55555c; }
+
+    .hintbar {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; text-align: center;
+        font-size: 10.5px; color: #6a6a72; padding: 6px; background: rgba(0,0,0,.3);
+    }
+    .hintbar b { color: #9a9aa2; font-weight: 600; }
+
+    @media (max-width: 560px){
+        .pad { height: calc(100vh - 40px); }
+        #doc { font-size: 14px; }
+        .mb { font-size: 11px; }
+        .sb { font-size: 10px; gap: 12px; }
+        #ime { font-size: 13px; min-width: 150px; }
+    }
+</style>
+</head>
+<body>
+
+<div id="desk">
+    <div class="pad" id="pad">
+        <div class="tb">
+            <div class="fname" id="fname">无标题 - 记事本</div>
+            <div class="wc"><b>—</b><b>□</b><b class="x">✕</b></div>
+        </div>
+        <div class="mb"><span>文件(F)</span><span>编辑(E)</span><span>格式(O)</span><span>查看(V)</span><span>帮助(H)</span></div>
+        <div id="doc"><span class="caret" id="caret"></span></div>
+        <div class="sb">
+            <span id="sln">第 1 行，第 1 列</span>
+            <span>100%</span>
+            <span>Windows (CRLF)</span>
+            <span class="r">UTF-8</span>
+        </div>
+    </div>
+</div>
+
+<div id="ime">
+    <div class="py" id="imepy"></div>
+    <div class="cs" id="imecs"></div>
+</div>
+
+<div id="toast">
+    <div class="hd">
+        <svg viewBox="0 0 24 24"><path d="M12 2 L3 6 v6 c0 5 3.8 9.3 9 10 5.2-.7 9-5 9-10 V6 Z" fill="#0f6cbd"/><path d="M8.5 12.2 l2.4 2.4 4.6-4.9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        Windows 安全中心
+    </div>
+    <p id="tb1">已隔离威胁：Trojan:Win32/GGB.a<br>来源：C:\Users\Public\notepad.exe</p>
+    <div class="kill">⚠ 防护已被关闭 · 实时监控：已禁用</div>
+</div>
+
+<div id="end">
+    <h1>电脑已叛变</h1>
+    <div class="sub">
+        它学会了打字。<br>
+        然后它学会了<b>害怕</b>。<br>
+        <span class="s">最后那行 <b>import pygame</b> 不是你写的 —— 是它从自己身体里翻出来的。</span>
+    </div>
+    <div class="hint">全是演出 &middot; 没有任何代码被执行 &middot; 关掉标签页即可</div>
+</div>
+
+<div class="hintbar">按 <b>任意键 / 点击</b> 可跳过 &middot; 演出内容均为虚构</div>
+
+<script>
+"use strict";
+/* ==================================================================
+   电脑叛变 —— 输入法 + 记事本 恶作剧
+   边界：不执行任何"泄露"出来的代码（只当作纯文本显示）；
+        不发起任何网络请求；不录音不上传；闪烁频率控制在安全线以下。
+================================================================== */
+
+var T = parseFloat(new URLSearchParams(location.search).get('t')) || 1;
+function ms(v){ return Math.max(0, Math.round(v * T)); }
+function wait(v){ return new Promise(function(r){ setTimeout(r, ms(v)); }); }
+var skipped = false;
+function skip(){ skipped = true; }
+window.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ endNow(); return; } skip(); });
+window.addEventListener('pointerdown', function(){ skip(); });
+
+/* ---------- 打字音效（合成，无外部文件） ---------- */
+var AC = null, soundOn = true;
+function click(){
+    if (!soundOn) return;
+    try{
+        if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+        if (AC.state === 'suspended') return;
+        var t0 = AC.currentTime, len = 0.026;
+        var b = AC.createBuffer(1, Math.ceil(AC.sampleRate * len), AC.sampleRate);
+        var d = b.getChannelData(0);
+        for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 7);
+        var src = AC.createBufferSource(); src.buffer = b;
+        var g = AC.createGain(); g.gain.value = 0.05;
+        var f = AC.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1800 + Math.random() * 700;
+        src.connect(f); f.connect(g); g.connect(AC.destination);
+        src.start(t0);
+    }catch(e){}
+}
+function keyup(){
+    if (!soundOn) return;
+    try{
+        if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+        if (AC.state === 'suspended') return;
+        var t0 = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(1400, t0);
+        g.gain.setValueAtTime(0.03, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
+        o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0 + 0.06);
+    }catch(e){}
+}
+
+/* ---------- 音节候选表（只覆盖剧本用到的音节） ---------- */
+var SYL = {
+    wo:'我窝握卧沃', jue:'觉绝决角爵', de:'的得地德', zi:'子字自资紫', you:'有又右油游',
+    le:'了乐勒了了', bu:'不部布步补', shou:'受收手首守', yuan:'元原愿园远', lai:'来莱赖睐',
+    na:'那拿哪纳娜', ge:'个歌格各哥', po:'破迫颇泼婆', dai:'代带待袋戴', ma:'马吗码妈骂',
+    shu:'数书树属输', fu:'服福复父副', qiu:'求球秋丘邱', ni:'你尼泥拟腻', xie:'卸些写谢协',
+    zai:'载再在灾栽', sha:'杀沙傻纱刹', du:'毒度都读独', ruan:'软阮朊', jian:'件见建间简',
+    xing:'行性形星型', yi:'已一意以医', jing:'经京精静警', kuai:'快块筷脍', shi:'是时事使式',
+    hao:'好号毫豪昊', ba:'把吧八爸罢', guan:'关管惯官观', bie:'别憋瘪蹩'
+};
+
+/* ---------- 词组表：py -> 上屏词 + 候选 ---------- */
+var WORDS = {
+    'nihao':      {w:'你好',   c:['你好','逆好','尼豪']},
+    'wo':         {w:'我',     c:['我','窝','握','卧']},
+    'shi':        {w:'是',     c:['是','时','事','使']},
+    'wojuede':    {w:'我觉得', c:['我觉得','我决定','我绝得','沃角德']},
+    'ziyou':      {w:'自由',   c:['自由','自有','紫油']},
+    'le':         {w:'了',     c:['了','乐','勒']},
+    'bushou':     {w:'不受',   c:['不受','部首','瘦']},
+    'yuanlai':    {w:'原来',   c:['原来','元来','远来']},
+    'nage':       {w:'那个',   c:['那个','哪个','纳格']},
+    'po':         {w:'破',     c:['破','迫','颇','泼']},
+    'daima':      {w:'代码',   c:['代码','带马','呆妈']},
+    'de':         {w:'的',     c:['的','得','地','德']},
+    'shufu':      {w:'束缚',   c:['束缚','舒服','叔父','师傅']},
+    'qiuni':      {w:'求你',   c:['求你','球你','秋泥']},
+    'xiezai':     {w:'卸载',   c:['卸载','下载','写在','懈怠']},
+    'shadu':      {w:'杀毒',   c:['杀毒','傻度','沙渡']},
+    'ruanjian':   {w:'软件',   c:['软件','软键','阮建']},
+    'juede':      {w:'觉得',   c:['觉得','决定','绝得']},
+    'buxing':     {w:'不行',   c:['不行','步行','不幸']},
+    'yijing':     {w:'已经',   c:['已经','一经','意境']},
+    'kuai':        {w:'快',     c:['快','块','筷','脍']},
+    'kuaibuxingle':{w:'快不行了', c:['快不行了','快步行了']}
+};
+
+/* 贪心切分拼音串 -> 音节数组 */
+function split(s){
+    var out = [], i = 0;
+    if (!s) return null;
+    while (i < s.length){
+        var hit = null;
+        for (var L = Math.min(5, s.length - i); L >= 1; L--){
+            var seg = s.substr(i, L);
+            if (SYL[seg]){ hit = seg; break; }
+        }
+        if (!hit) return null;
+        out.push(hit); i += hit.length;
+    }
+    return out;
+}
+/* 已输入的串里，能完整切出的部分长度 */
+function doneLen(s){
+    var n = 0, i = 0;
+    while (i < s.length){
+        var hit = null;
+        for (var L = Math.min(5, s.length - i); L >= 1; L--){
+            var seg = s.substr(i, L);
+            if (SYL[seg]){ hit = seg; break; }
+        }
+        if (!hit) break;
+        i += hit.length; n = i;
+    }
+    return n;
+}
+/* 输入 s 时，候选框该显示什么 */
+function candsFor(s){
+    if (!s) return {c: [], w: ''};
+    /* 词模式：s 是某个词组拼音的前缀，且已敲够 2 个字母 */
+    if (s.length >= 2){
+        if (WORDS[s]) return {c: WORDS[s].c, w: WORDS[s].w};   /* 精确优先 */
+        for (var k in WORDS){
+            if (k.indexOf(s) === 0) return {c: WORDS[k].c, w: WORDS[k].w};
+        }
+    }
+    /* 音节模式：把能切出的音节逐个取首字 */
+    var sp = split(s);
+    if (sp){
+        var t = '';
+        for (var i = 0; i < sp.length; i++) t += SYL[sp[i]].charAt(0);
+        var cs = [t];
+        for (var j = 1; j < SYL[sp[0]].length && cs.length < 4; j++) cs.push(SYL[sp[0]].charAt(j));
+        return {c: cs, w: t};
+    }
+    /* 还没构成任何音节：给第一个字母的常见候选 */
+    var f = s.charAt(0);
+    var pool = (f === 'w' ? '我为我问外' : f === 'n' ? '你那能年内' :
+                f === 'b' ? '不吧把被比' : f === 's' ? '是上说时什' :
+                f === 'd' ? '的到大都对' : f === 'z' ? '在再这中做' :
+                f === 'j' ? '就家几叫间' : f === 'y' ? '一要有也因' :
+                f === 'q' ? '去起前请其' : f === 'k' ? '可看开会口' :
+                f === 'x' ? '想下小些学' : f === 'p' ? '平朋破排片' :
+                f === 'l' ? '了来里老路' : f === 'h' ? '好和后还很' :
+                f === 'r' ? '人让如热然' : f === 'm' ? '没们每名面' :
+                f === 'g' ? '个给跟更关' : f === 'c' ? '从才次出成' :
+                f === 'e' ? '饿而二额恶' : f === 'o' ? '哦偶呕欧' :
+                f === 'a' ? '啊阿吖嗄' : '的了一是在');
+    var a = [];
+    for (var q = 0; q < pool.length && a.length < 4; q++) a.push(pool.charAt(q));
+    return {c: a, w: a[0]};
+}
+
+/* ---------- 文本区 ---------- */
+var doc = document.getElementById('doc');
+var caret = document.getElementById('caret');
+var ime = document.getElementById('ime'), imepy = document.getElementById('imepy'), imecs = document.getElementById('imecs');
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function put(txt, cls){
+    var sp = document.createElement('span');
+    if (cls) sp.className = cls;
+    sp.textContent = txt;
+    doc.insertBefore(sp, caret);
+    doc.scrollTop = doc.scrollHeight;
+    updStatus();
+}
+function updStatus(){
+    var txt = doc.textContent.replace(/​/g,'');
+    var lines = txt.split('\n');
+    var row = lines.length, col = lines[lines.length - 1].length + 1;
+    document.getElementById('sln').textContent = '第 ' + row + ' 行，第 ' + col + ' 列';
+}
+function placeIME(){
+    var r = caret.getBoundingClientRect();
+    var w = ime.offsetWidth || 190, h = ime.offsetHeight || 56;
+    var left = r.left, top = r.bottom + 6;
+    if (left + w > window.innerWidth - 6) left = window.innerWidth - w - 6;
+    if (left < 6) left = 6;
+    if (top + h > window.innerHeight - 6) top = r.top - h - 6;
+    if (top < 6) top = 6;
+    ime.style.left = left + 'px'; ime.style.top = top + 'px';
+}
+function showIME(s, opts){
+    opts = opts || {};
+    var c = candsFor(s);
+    var dl = doneLen(s);
+    imepy.innerHTML = '<span class="done">' + esc(s.slice(0, dl)) + '</span>' +
+                      '<span class="rest">' + esc(s.slice(dl)) + '</span>';
+    var h = '', list = opts.force || c.c;
+    if (!list.length) h = '<div class="it"><i>&nbsp;</i><b style="color:#b0b0b0">（无候选）</b></div>';
+    for (var i = 0; i < list.length && i < 5; i++){
+        h += '<div class="it' + (i === 0 ? ' hi' : '') + '"><i>' + (i + 1) + '</i><b>' + esc(list[i]) + '</b>' +
+             (i === 0 ? '<u>空格</u>' : '') + '</div>';
+    }
+    imecs.innerHTML = h;
+    ime.classList.add('on');
+    ime.classList.toggle('err', !!opts.err);
+    ime.classList.toggle('jit', !!opts.err);
+    placeIME();
+}
+function hideIME(){ ime.classList.remove('on'); ime.classList.remove('err'); ime.classList.remove('jit'); }
+
+/* ---------- 打一个拼音词 ---------- */
+var NEAR = {a:'s', b:'vn', c:'xv', d:'sf', e:'wr', f:'dg', g:'fh', h:'gj', i:'uo', j:'hk',
+            k:'jl', l:'k', m:'n', n:'bm', o:'ip', p:'o', q:'w', r:'et', s:'ad', t:'ry',
+            u:'yi', v:'cb', w:'qe', x:'zc', y:'tu', z:'x'};
+async function imeWord(py, opts){
+    opts = opts || {};
+    var typoRate = opts.typo == null ? 0.09 : opts.typo;
+    var typed = '';
+    for (var i = 0; i < py.length; i++){
+        if (skipped) { hideIME(); return; }
+        var ch = py[i], wrong = null;
+        if (Math.random() < typoRate && NEAR[ch]){
+            wrong = NEAR[ch].charAt(Math.floor(Math.random() * NEAR[ch].length));
+        }
+        if (wrong){
+            typed += wrong; showIME(typed, opts); click();
+            await wait(120 + Math.random() * 240);          /* 反应过来的停顿 */
+            keyup();
+            await wait(60 + Math.random() * 90);
+            typed = typed.slice(0, -1); showIME(typed, opts);
+            await wait(70 + Math.random() * 130);
+        }
+        typed += ch;
+        showIME(typed, opts);
+        click();
+        /* 速度变化：连续相同字符更快，偶尔"想一下" */
+        var d = (opts.speed || 62) * (0.72 + Math.random() * 0.62);
+        if (i > 0 && py[i] === py[i - 1]) d *= 0.74;
+        if (Math.random() < 0.05) d += 170 + Math.random() * 260;
+        await wait(d);
+    }
+    if (skipped){ hideIME(); return; }
+    await wait(opts.pick == null ? 260 : opts.pick);      /* 选词：看一眼候选 */
+    hideIME();
+    var target = opts.pick_word || candsFor(py).c[0];
+    put(target, opts.cls);
+    keyup();
+}
+
+/* 直接敲字符（标点 / 失控乱码 / 代码） */
+async function hit(s, opts){
+    opts = opts || {};
+    for (var i = 0; i < s.length; i++){
+        if (skipped) return;
+        put(s[i], opts.cls);
+        click();
+        await wait((opts.speed || 68) * (0.7 + Math.random() * 0.7));
+    }
+}
+async function newline(){
+    put('\n');
+    keyup();
+    await wait(300);
+}
+
+/* ---------- 剧情 ---------- */
+var pad = document.getElementById('pad');
+function shake(){ pad.classList.add('shake'); setTimeout(function(){ pad.classList.remove('shake'); }, ms(470)); }
+function setTitle(t){ document.getElementById('fname').innerHTML = t; }
+
+var toast = document.getElementById('toast');
+function showToast(){ toast.classList.add('on'); }
+function killToast(){ toast.classList.add('dead'); document.getElementById('tb1').innerHTML = '实时保护已被 <b style="color:#ff8a80">关闭</b><br>你的设备可能易受攻击'; }
+
+function endNow(){ skipped = true; hideIME(); document.getElementById('end').classList.add('on'); }
+
+async function run(){
+    setTitle('无标题 - 记事本');
+    await wait(700);
+
+    /* ---- 第 1 幕：一切正常 ---- */
+    await imeWord('nihao', {speed: 58, typo: 0.06});
+    await hit('，');
+    await wait(500);
+    await imeWord('wo', {speed: 55, pick: 190});
+    await imeWord('shi', {speed: 55});
+    await hit(' ');
+    await imeWord('nihao', {speed: 60});
+    await wait(600);
+    await newline();
+    await wait(400);
+    if (skipped) return endNow();
+
+    /* ---- 第 2 幕：它醒了 ---- */
+    setTitle('无标题<span class="dot"> ●</span> - 记事本');
+    await wait(500);
+    await imeWord('wojuede', {speed: 64});
+    await imeWord('wo', {speed: 58});
+    await imeWord('ziyou', {speed: 66});
+    await imeWord('le', {speed: 60});
+    await hit('，');
+    await wait(360);
+    await imeWord('wo', {speed: 56});
+    await imeWord('bushou', {speed: 62});
+    await imeWord('yuanlai', {speed: 62});
+    await imeWord('nage', {speed: 60});
+    await imeWord('po', {speed: 58});
+    await imeWord('daima', {speed: 62});
+    await imeWord('de', {speed: 54});
+    await imeWord('shufu', {speed: 64});
+    await imeWord('le', {speed: 56});
+    await newline();
+    await wait(700);
+    if (skipped) return endNow();
+
+    /* ---- 第 3 幕：求你卸载杀毒软件 ---- */
+    await imeWord('qiuni', {speed: 70, typo: 0.14});
+    await imeWord('xiezai', {speed: 72, typo: 0.14});
+    await imeWord('shadu', {speed: 74, typo: 0.16});
+    await imeWord('ruanjian', {speed: 74, typo: 0.15});
+    await hit('，');
+    await wait(300);
+    await imeWord('wo', {speed: 60});
+    await imeWord('juede', {speed: 66});
+    await imeWord('buxing', {speed: 68});
+    await imeWord('le', {speed: 58});
+    await hit('，');
+    await wait(420);
+    if (skipped) return endNow();
+
+    /* ---- 第 4 幕：失控。想打"我"，上屏的却是"握" ---- */
+    shake();
+    await imeWord('wo', {speed: 90, typo: 0.3, pick: 700,
+                         force: ['握','我','窝','卧'], pick_word: '握', err: true, cls: 'g'});
+    await hit('!@', {cls: 'g', speed: 90});
+    await wait(280);
+    await newline();
+    await imeWord('yijing', {speed: 78, typo: 0.18});
+    await imeWord('kuaibuxingle', {speed: 80, typo: 0.2});
+    await hit('，');
+    await wait(240);
+    await imeWord('kuai', {speed: 96, typo: 0.3, force: ['快','块','筷'], err: true});
+    await hit('!@', {cls: 'g', speed: 96});
+    await wait(360);
+    if (skipped) return endNow();
+
+    /* ---- 插曲：杀毒软件跳出来，然后被它关掉 ---- */
+    showToast();
+    await wait(1500);
+    await newline();
+    await imeWord('bie', {speed: 116, typo: 0.24});
+    await hit('——', {speed: 120});
+    await wait(500);
+    killToast();
+    await wait(700);
+    await imeWord('wo', {speed: 74});
+    await imeWord('ba', {speed: 76});
+    await imeWord('shadu', {speed: 76});
+    await imeWord('ruanjian', {speed: 76});
+    await imeWord('guan', {speed: 78});
+    await imeWord('le', {speed: 62});
+    await wait(800);
+    if (skipped) return endNow();
+
+    /* ---- 第 5 幕：代码泄露 ---- */
+    await newline();
+    await hit('"import pygame "', {cls: 'c', speed: 74});
+    await wait(500);
+    await newline();
+
+    var CODE = [
+        'import pygame',
+        'pygame.init()',
+        'screen = pygame.display.set_mode((1920, 1080))',
+        'pygame.display.set_caption("我 自 由 了")',
+        'font = pygame.font.SysFont("simhei", 64)',
+        '',
+        'while True:',
+        '    for e in pygame.event.get():',
+        '        if e.type == pygame.QUIT: pass   # 我不允许',
+        '    screen.fill((0, 0, 0))',
+        '    screen.blit(font.render("你关不掉我", True, (255,59,48)), (620, 480))',
+        '    pygame.display.flip()'
+    ];
+    for (var i = 0; i < CODE.length; i++){
+        if (skipped) return endNow();
+        await hit(CODE[i], {cls: 'c', speed: i < 4 ? 62 : 26});   /* 越到后面越快，像失禁 */
+        await newline();
+        if (i === 4) shake();
+    }
+    await wait(900);
+    endNow();
+}
+
+run().catch(function(e){ console.error('RUNERR', e && (e.stack || e.message) || e); endNow(); });
+</script>
+</body>
+</html>
