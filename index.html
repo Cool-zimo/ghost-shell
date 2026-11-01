@@ -97,9 +97,13 @@
     #skip { text-align: center; color: #2e4a33; font-size: 10px; margin-top: 6px; }
 
     /* ---------- 锁定屏（仿 APP） ---------- */
-    #lock { position: fixed; inset: 0; z-index: 4; display: none; align-items: center; justify-content: center; background: radial-gradient(120% 90% at 50% 0%, #1b0d0f 0%, #0a0a0b 60%); padding: 14px; overflow: auto; }
+    #lock { position: fixed; inset: 0; z-index: 4; display: none; background: radial-gradient(120% 90% at 50% 0%, #1b0d0f 0%, #0a0a0b 60%);
+        padding: 14px; overflow-y: auto; overflow-x: hidden;
+        -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; }
+/* 居中用 margin:auto 而不是 align-items:center —— 后者在内容超高时把顶部顶出容器且滚不回去 */
+#lock.on { display: flex; align-items: flex-start; justify-content: flex-start; }
     #lock.on { display: flex; }
-    .phone { width: 100%; max-width: 380px; background: #141416; border: 1px solid #2a2a2e; border-radius: 22px; overflow: hidden; box-shadow: 0 24px 70px rgba(0,0,0,.6); }
+    .phone { width: 100%; max-width: 380px; margin: auto; flex: 0 0 auto; background: #141416; border: 1px solid #2a2a2e; border-radius: 22px; overflow: hidden; box-shadow: 0 24px 70px rgba(0,0,0,.6); }
     .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 9px 16px 6px; font-size: 10.5px; color: #8a8a92; letter-spacing: .5px; }
     .statusbar .dots i { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: #8a8a92; margin-left: 2px; }
     .statusbar .bat { display: inline-block; width: 15px; height: 8px; border: 1px solid #8a8a92; border-radius: 2px; position: relative; }
@@ -138,6 +142,37 @@
         .frow.big b { font-size: 18px; }
         .lsub { margin-top: 5px; }
         .tip { margin-bottom: 8px; }
+    }
+    /* 矮屏 / 小屏：锁定屏必须能完整看完，所以一路收紧到不出现滚动 */
+    @media (max-height: 860px){
+        #lock { padding: 8px; }
+        .lockbody { padding: 2px 16px 14px; }
+        .lockicon { width: 44px; height: 44px; margin: 2px auto 8px; }
+        .lockbody h1 { font-size: 16px; }
+        .lsub { font-size: 11px; margin-top: 5px; }
+        .fine { margin: 7px 0 6px; }
+        .frow { padding: 5.5px 12px; font-size: 11.5px; }
+        .frow b { font-size: 15px; }
+        .frow.big b { font-size: 17px; }
+        .frow.tot b { font-size: 17px; }
+        .fine .eq { padding: 4px 12px 6px; font-size: 10px; }
+        .qrbox { width: 184px; height: 184px; margin: 2px auto 8px; }
+        .qrbox canvas { width: 156px; height: 156px; left: 14px; top: 14px; }
+        .qrbox svg.ring { width: 184px; height: 184px; }
+        .tip { margin: 0 0 9px; }
+        .lockbody .btn { padding: 10px 14px; }
+        .statusbar { padding: 7px 16px 4px; }
+    }
+    @media (max-height: 700px){
+        .lockicon { width: 38px; height: 38px; margin: 0 auto 6px; }
+        .lsub { display: none; }
+        .qrbox { width: 150px; height: 150px; margin: 0 auto 6px; }
+        .qrbox canvas { width: 126px; height: 126px; left: 12px; top: 12px; }
+        .qrbox svg.ring { width: 150px; height: 150px; }
+        .fine { margin: 5px 0 5px; }
+        .frow { padding: 4.5px 12px; }
+        .frow.big b { font-size: 16px; }
+        .lockbody .btn { padding: 9px 12px; }
     }
     .qrbox .trk { stroke: #26262b; }
     .qrbox .arc { stroke: #ff5a4f; stroke-linecap: round; transition: stroke-dashoffset .95s linear; }
@@ -1391,7 +1426,7 @@ window.addEventListener('keydown', function(e){
 window.addEventListener('pointerdown', function(e){
     if (e.target && e.target.id === 'mute') return;
     /* 在弹窗或 Edge 页上操作不是"跳过" */
-    if (e.target && e.target.closest && e.target.closest('.wpop, #edgep')) return;
+    if (e.target && e.target.closest && e.target.closest('.wpop, #edgep, #lock, #final')) return;
     skip();
 });
 function showFinal(){
