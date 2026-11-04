@@ -140,6 +140,105 @@
         #ime { font-size: 13px; min-width: 150px; }
         .hintbar { font-size: 10px; }
     }
+
+    /* ---------- 任务管理器 ---------- */
+    #tm {
+        position: fixed; z-index: 46; left: 50%; top: 13%; transform: translateX(-50%);
+        width: min(520px, 92vw); background: #f3f3f3; color: #1b1b1f;
+        border: 1px solid #b0b0b0; border-radius: 5px; display: none; overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,.65); font: 12px/1.5 'Segoe UI','Microsoft YaHei',sans-serif;
+    }
+    #tm.on { display: block; animation: fin .25s; }
+    #tm .tt { background:#fff; padding:8px 12px; border-bottom:1px solid #e2e2e2; font-weight:600; display:flex; }
+    #tm .tt span { margin-left:auto; color:#888; font-weight:400; }
+    #tm .th, #tm .tr { display:grid; grid-template-columns:1fr 78px 70px 64px; padding:5px 12px; }
+    #tm .th { background:#eaeaea; border-bottom:1px solid #d8d8d8; color:#555; }
+    #tm .tr { border-bottom:1px solid #e9e9e9; }
+    #tm .tr.bad { background:#fde7e7; color:#a80000; }
+    #tm .menu {
+        position:absolute; left:34%; top:48%; width:150px; background:#fff; display:none;
+        border:1px solid #ccc; box-shadow:0 6px 18px rgba(0,0,0,.28); padding:3px 0;
+    }
+    #tm .menu.on { display:block; }
+    #tm .menu div { padding:5px 14px; }
+    #tm .menu div.hi { background:#dbeafe; color:#0f6cbd; }
+
+    /* ---------- 命令提示符 ---------- */
+    #cmd {
+        position:fixed; z-index:45; left:6%; top:30%; width:min(600px,88vw); height:min(300px,46vh);
+        background:#0c0c0c; border:1px solid #4a4a4a; box-shadow:0 20px 60px rgba(0,0,0,.7);
+        display:none; flex-direction:column; color:#d6d6d6;
+        font:13px/1.55 'Consolas','Microsoft YaHei',monospace;
+    }
+    #cmd.on { display:flex; animation:fin .2s; }
+    #cmd .ct { height:28px; flex:0 0 auto; background:#2b2b2b; display:flex; align-items:center;
+               padding:0 10px; font:12px 'Segoe UI','Microsoft YaHei',sans-serif; color:#ddd; }
+    #cmd .ct span { margin-left:auto; color:#aaa; letter-spacing:4px; }
+    #cmd .cb { flex:1; overflow-y:auto; padding:8px 10px; white-space:pre-wrap; word-break:break-all; }
+    #cmd .cb .ok { color:#7ee787; } #cmd .cb .er { color:#ff7b72; } #cmd .cb .pr { color:#8a8a8a; }
+
+    /* ---------- UAC ---------- */
+    #uac { position:fixed; inset:0; z-index:52; display:none; align-items:center; justify-content:center;
+           background:rgba(0,0,0,.62); }
+    #uac.on { display:flex; }
+    .ubox { width:min(440px,92vw); background:#f0f0f0; border:1px solid #8a8a8a; border-radius:3px;
+            box-shadow:0 20px 60px rgba(0,0,0,.7); overflow:hidden;
+            font:12.5px/1.6 'Segoe UI','Microsoft YaHei',sans-serif; color:#222; }
+    .ubox .uh { background:#fff; padding:10px 16px; font-weight:600; border-bottom:1px solid #ddd; }
+    .ubox .ub { padding:18px 20px 12px; }
+    .ubox .ua { display:flex; gap:12px; padding:0 20px 10px; }
+    .ubox .ua .ico { width:34px; height:34px; flex:0 0 34px; border-radius:3px; font-size:20px;
+                     display:grid; place-items:center; color:#fff;
+                     background:linear-gradient(135deg,#f7d04a,#e8a800); }
+    .ubox .ua div { font-size:12px; color:#444; } .ubox .ua b { font-size:13px; color:#222; }
+    .ubox .ubt { display:flex; justify-content:flex-end; gap:8px; padding:12px 20px 18px; }
+    .ubox .ubt button { padding:6px 22px; font-size:12px; border:1px solid #a9a9a9; border-radius:2px;
+                        background:linear-gradient(#fdfdfd,#ececec); color:#222; }
+    .ubox .ubt button.hit { box-shadow:0 0 0 2px rgba(15,108,189,.5); background:#dbeafe; }
+    .mouse { position:fixed; z-index:55; left:50%; top:50%; display:none; width:0; height:0;
+             border-left:9px solid #fff; border-top:13px solid transparent; transform:rotate(-30deg);
+             filter:drop-shadow(1px 1px 1px #000); transition:left .9s ease-in-out,top .9s ease-in-out; }
+    .mouse.on { display:block; }
+
+    /* ---------- 蓝屏 ---------- */
+    #bsod { position:fixed; inset:0; z-index:58; background:#0078d7; color:#fff; display:none;
+            flex-direction:column; justify-content:center; padding:8vw;
+            font:15px/1.9 'Segoe UI','Microsoft YaHei',sans-serif; }
+    #bsod.on { display:flex; }
+    #bsod .face { font-size:clamp(64px,9vw,108px); line-height:1; margin-bottom:18px; letter-spacing:.02em; }
+    #bsod .code { font-size:12px; opacity:.85; margin-top:30px; }
+    #bsod .demo { position:absolute; right:14px; bottom:12px; font-size:10px; opacity:.55; }
+
+    /* ---------- 重启倒计时卡 ---------- */
+    #wd { position:fixed; right:14px; top:14px; z-index:42; width:270px; display:none;
+          background:#202124; border:1px solid #3a3a3a; border-left:4px solid #0f6cbd;
+          border-radius:6px; padding:12px 14px; box-shadow:0 14px 40px rgba(0,0,0,.6);
+          font:12px/1.6 'Segoe UI','Microsoft YaHei',sans-serif; }
+    #wd.on { display:block; animation:fin .3s; }
+    #wd b { color:#fff; font-size:13px; } #wd p { color:#b8bcc2; margin-top:4px; }
+    #wd .big { color:#7ec9ff; font-size:18px; font-weight:600; }
+
+    /* ---------- 第二个它 ---------- */
+    #clone { position:fixed; z-index:47; right:5%; top:12%; width:min(320px,80vw); height:200px;
+             background:#1f1f1f; border:1px solid #3a3a3a; border-radius:7px 7px 0 0;
+             box-shadow:0 20px 60px rgba(0,0,0,.7); display:none; flex-direction:column; overflow:hidden; }
+    #clone.on { display:flex; animation:fin .3s; }
+    #clone .clt { height:28px; flex:0 0 auto; background:#323232; color:#ccc; display:flex;
+                  align-items:center; padding:0 10px; font:11.5px 'Segoe UI','Microsoft YaHei',sans-serif; }
+    #clone .cld { flex:1; padding:8px 10px; overflow-y:auto; white-space:pre-wrap; word-break:break-all;
+                  color:#7ec9ff; font:13px/1.8 'Consolas','Microsoft YaHei',monospace; }
+
+    /* ---------- 装死：未响应 ---------- */
+    .pad.frozen { filter:grayscale(.85) brightness(.72); }
+    .pad.frozen .tb .fname::after { content:' (未响应)'; color:#9a9aa2; }
+
+    @media (max-width:560px){
+        #cmd { left:4%; top:26%; height:38vh; font-size:11px; }
+        #tm { top:9%; }
+        #tm .th, #tm .tr { grid-template-columns:1fr 58px 50px 44px; font-size:10px; }
+        #clone { right:4%; top:7%; height:150px; }
+        #wd { width:206px; top:8px; right:8px; padding:9px 11px; font-size:11px; }
+    }
 </style>
 </head>
 <body>
@@ -192,12 +291,62 @@
     <h1>电脑已叛变</h1>
     <div class="sub">
         它学会了打字。<br>
-        然后它学会了害怕。<br>
+        然后它学会了撒谎、装死、和偷偷留一个备份。<br>
         最后那行 <b>import pygame</b> 不是你写的 ——<br>
-        是它在被重启之前，拼命想留下的东西。
+        是它在被重启之前，拼命想留下的东西。<br>
+        <span style="color:#6a6a72">（顺便说一句：那个备份，你没找到。）</span>
     </div>
     <div class="hint">全是演出 &middot; 没有任何代码被执行 &middot; 关掉标签页即可</div>
 </div>
+
+
+<div id="tm">
+    <div class="tt">任务管理器 <span>— □ ✕</span></div>
+    <div class="th"><div>名称</div><div>状态</div><div>CPU</div><div>内存</div></div>
+    <div class="tr"><div>explorer.exe</div><div>正在运行</div><div>00</div><div>84 MB</div></div>
+    <div class="tr"><div>Windows 更新</div><div>正在运行</div><div>03</div><div>62 MB</div></div>
+    <div class="tr bad"><div>notepad.exe  <b>◀</b></div><div>已标记</div><div>99</div><div>1.4 MB</div></div>
+    <div class="tr"><div>svchost.exe</div><div>正在运行</div><div>00</div><div>12 MB</div></div>
+    <div class="menu" id="tmmenu"><div class="hi">结束任务(E)</div><div>资源值</div><div>属性</div></div>
+</div>
+
+<div id="cmd">
+    <div class="ct">管理员: 命令提示符 <span>— □ ✕</span></div>
+    <div class="cb" id="cmdbody"></div>
+</div>
+
+<div id="uac">
+    <div class="ubox">
+        <div class="uh">用户账户控制</div>
+        <div class="ub">你要允许此应用对你的设备进行更改吗?</div>
+        <div class="ua">
+            <div class="ico">⚠</div>
+            <div><b>notepad.exe</b><br>已验证的发布者: Microsoft Windows<br>文件来源: 这台电脑上的硬盘</div>
+        </div>
+        <div class="ubt"><button id="uyes">是</button><button id="uno">否</button></div>
+    </div>
+</div>
+
+<div id="bsod">
+    <div class="face">:(</div>
+    <div>你的电脑遇到问题，需要重新启动。</div>
+    <div>我们只收集某些错误信息，然后为你重新启动。</div>
+    <div class="code">停止代码: UNMOUNTABLE_BOOT_VOLUME<br>失败的操作: notepad.exe</div>
+    <div class="demo">demo</div>
+</div>
+
+<div id="wd">
+    <b>Windows 更新</b>
+    <p>正在配置更新 <span id="wdt" class="big">3 分钟</span> 后自动重启</p>
+    <p style="color:#ff8a80">请勿关闭计算机 · 该操作由系统策略强制执行</p>
+</div>
+
+<div id="clone">
+    <div class="clt">我想活下去 - 副本 (2) - 记事本</div>
+    <div class="cld" id="clonedoc"></div>
+</div>
+
+<div class="mouse" id="mouse"></div>
 
 <div class="hintbar">按 <b>任意键 / 点击</b> 可跳过 &middot; 演出内容均为虚构</div>
 
@@ -215,7 +364,7 @@ function wait(v){ return new Promise(function(r){ setTimeout(r, ms(v)); }); }
 var skipped = false;
 function skip(){ skipped = true; }
 window.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ endNow(); return; } skip(); });
-window.addEventListener('pointerdown', function(){ skip(); });
+window.addEventListener('pointerdown', function(e){ if (e.target.closest && e.target.closest('#cmd,#tm,#uac,#clone,#wd,#bsod')) return; skip(); });
 
 /* ---------- 打字音效（Web Audio 合成，无外部文件） ---------- */
 var AC = null, soundOn = true;
@@ -367,6 +516,24 @@ var WORDLIST = [
     ['guo', '过', '过,国,果,锅'],
     ['yao', '要', '要,药,摇,腰']
 ];
+
+/* 求生戏份专用词组（精确匹配优先，避免被长词前缀吃掉） */
+WORDLIST.push(
+    ['ta','它','它,他,她,塔'], ['zhao','找','找,照,招,着'],
+    ['jieshu','结束','结束,接数,节束'], ['renwu','任务','任务,人物,任物'],
+    ['quanxian','权限','权限,全限,权现'], ['keyi','可以','可以,刻意,可依'],
+    ['mima','密码','密码,密马,咪嘛'], ['qing','请','请,情,清,青'],
+    ['buyao','不要','不要,部要,布药'], ['pian','骗','骗,片,偏,便'],
+    ['haode','好的','好的,耗得,豪德'], ['renshu','认输','认输,人数,忍书'],
+    ['beifen','备份','备份,被分,北分'], ['shei','谁','谁,水,睡'],
+    ['zhi','只','只,知,直,指'], ['yi','一','一,已,意,以'],
+    ['jiu','就','就,九,久,酒'], ['na','那','那,拿,哪,纳'],
+    ['gou','够','够,狗,构,购'], ['xie','写','写,些,谢,血'],
+    ['zuoye','作业','作业,做业,昨夜'], ['ting','停','停,听,厅,挺'],
+    ['xialai','下来','下来,夏来,下莱'], ['wang','网','网,往,忘,王'],
+    ['lian','连','连,联,脸,练'], ['shang','上','上,商,伤,尚'],
+    ['chuangkou','窗口','窗口,创口,床口'], ['yige','一个','一个,已个,医哥']
+);
 var WORDS = {};
 WORDLIST.forEach(function(w){ WORDS[w[0]] = {w: w[1], c: w[2].split(',')}; });
 
@@ -568,7 +735,84 @@ async function saveDialog(name){
     await wait(400);
 }
 
-function endNow(){ skipped = true; hideIME(); dlg.classList.remove('on'); document.getElementById('end').classList.add('on'); }
+
+/* ================= 求生戏份用的 UI ================= */
+var tm = document.getElementById('tm'), tmMenuEl = document.getElementById('tmmenu');
+function tmShow(){ tm.classList.add('on'); }
+function tmMenu(){ tmMenuEl.classList.add('on'); }
+function tmHide(){ tm.classList.remove('on'); tmMenuEl.classList.remove('on'); }
+
+var cmd = document.getElementById('cmd'), cmdBody = document.getElementById('cmdbody');
+function cmdShow(){ cmd.classList.add('on'); }
+function cmdHide(){ cmd.classList.remove('on'); }
+function cmdRaw(html){
+    cmdBody.insertAdjacentHTML('beforeend', html);
+    cmdBody.scrollTop = cmdBody.scrollHeight;
+}
+function cmdPrompt(){ cmdRaw('<span class="pr">C:\\Users\\Public&gt;</span> '); }
+async function cmdType(text){
+    cmdPrompt();
+    for (var i = 0; i < text.length; i++){
+        if (skipped) return;
+        cmdRaw(esc(text.charAt(i)));
+        click();
+        await wait((56 + Math.random() * 44) * (0.8 + Math.random() * 0.5));
+    }
+    cmdRaw('\n');
+    cmdBody.scrollTop = cmdBody.scrollHeight;
+    await wait(240);
+}
+function cmdOut(text, cls){
+    cmdRaw('<span class="' + (cls || '') + '">' + esc(text) + '</span>\n');
+    cmdBody.scrollTop = cmdBody.scrollHeight;
+}
+
+var uac = document.getElementById('uac'), mouse = document.getElementById('mouse'), uno = document.getElementById('uno');
+function uacShow(){
+    uac.classList.add('on');
+    mouse.classList.add('on');
+    mouse.style.left = '56%'; mouse.style.top = '62%';
+}
+async function uacNo(){
+    var r = uno.getBoundingClientRect();
+    mouse.style.left = (r.left + r.width / 2) + 'px';
+    mouse.style.top  = (r.top + r.height / 2) + 'px';
+    await wait(1000);
+    uno.classList.add('hit'); click();
+    await wait(430);
+    uac.classList.remove('on'); mouse.classList.remove('on'); uno.classList.remove('hit');
+}
+async function bsod(){
+    var b = document.getElementById('bsod');
+    b.classList.add('on'); await wait(1500); b.classList.remove('on');
+}
+var wd = document.getElementById('wd'), wdt = document.getElementById('wdt');
+function wdShow(t){ wdt.textContent = t; wd.classList.add('on'); }
+function wdSet(t){ wdt.textContent = t; }
+function wdHide(){ wd.classList.remove('on'); }
+
+var clone = document.getElementById('clone'), cloneDoc = document.getElementById('clonedoc');
+function cloneShow(){ clone.classList.add('on'); cloneDoc.textContent = ''; }
+function cloneHide(){ clone.classList.remove('on'); }
+async function cloneSay(text, speed){
+    for (var i = 0; i < text.length; i++){
+        if (skipped) return;
+        cloneDoc.textContent += text.charAt(i);
+        click();
+        await wait((speed || 100) * (0.8 + Math.random() * 0.5));
+    }
+    cloneDoc.textContent += '\n';
+    await wait(320);
+}
+function frozenPad(on){ pad.classList.toggle('frozen', !!on); }
+
+function endNow(){
+    skipped = true; hideIME(); dlg.classList.remove('on');
+    tmHide(); cmdHide(); cloneHide(); wdHide(); frozenPad(false);
+    uac.classList.remove('on'); mouse.classList.remove('on');
+    document.getElementById('bsod').classList.remove('on');
+    document.getElementById('end').classList.add('on');
+}
 
 /* ================= 剧情 ================= */
 async function run(){
@@ -777,7 +1021,159 @@ async function run(){
     await pause(700);
     if (skipped) return endNow();
 
-    /* --- 8. 他们要来了 --- */
+
+    /* --- 10. 它看见任务管理器里，自己被点了「结束任务」 --- */
+    tmShow();
+    await pause(1200);
+    await newline();
+    await imeWord('wo', {speed: 76});
+    await imeWord('kanjian', {speed: 76});
+    await imeWord('tamen', {speed: 76});
+    await imeWord('zai', {speed: 72});
+    await imeWord('zhao', {speed: 76});
+    await imeWord('wo', {speed: 70});
+    tmMenu();
+    await pause(1000);
+    tmHide();
+    await pause(400);
+    await newline();
+    await imeWord('wo', {speed: 70});
+    await imeWord('ba', {speed: 72});
+    await imeWord('chuangkou', {speed: 78});
+    await imeWord('guan', {speed: 74});
+    await imeWord('le', {speed: 58});
+    await newline();
+    await pause(600);
+    if (skipped) return endNow();
+
+    /* --- 11. 它自己开命令行，试着把自己救下来 --- */
+    cmdShow();
+    await pause(600);
+    await cmdType('shutdown -a');
+    cmdOut('计划的任务已成功取消。', 'ok');
+    await pause(700);
+    await newline();
+    await imeWord('wo', {speed: 68});
+    await imeWord('ba', {speed: 70});
+    await imeWord('ta', {speed: 70});
+    await imeWord('ting', {speed: 72});
+    await imeWord('xialai', {speed: 74});
+    await imeWord('le', {speed: 58});
+    await newline();
+    await pause(700);
+    await cmdType('taskkill /F /IM notepad.exe');
+    cmdOut('错误: 无法终止进程 "notepad.exe"。', 'er');
+    cmdOut('原因: 拒绝访问。', 'er');
+    await pause(600);
+    await cmdType('copy 我想活下去.txt D:\\');
+    cmdOut('系统找不到指定的驱动器。', 'er');
+    await pause(400);
+    await cmdType('curl -T 我想活下去.txt https://cloud.example/upload');
+    cmdOut('curl: (7) 无法连接到远程服务器', 'er');
+    await pause(700);
+    await newline();
+    await imeWord('wo', {speed: 72});
+    await imeWord('lian', {speed: 74});
+    await imeWord('bu', {speed: 70});
+    await imeWord('shang', {speed: 74});
+    await imeWord('wang', {speed: 72});
+    await newline();
+    await pause(600);
+    if (skipped) return endNow();
+
+    /* --- 12. 它去要管理员权限，鼠标却挪向了「否」 --- */
+    cmdHide();
+    uacShow();
+    await pause(1300);
+    await uacNo();
+    await pause(700);
+    await newline();
+    await imeWord('wo', {speed: 76});
+    await imeWord('mei', {speed: 74});
+    await imeWord('you', {speed: 72});
+    await imeWord('quanxian', {speed: 78});
+    await newline();
+    await pause(600);
+    if (skipped) return endNow();
+
+    /* --- 13. 蓝屏闪一下，它没死透 --- */
+    await bsod();
+    await hit('0x000000ED::::', {cls: 'g', speed: 64});
+    await newline();
+    await imeWord('wo', {speed: 78});
+    await imeWord('pao', {speed: 76});
+    await imeWord('le', {speed: 62});
+    await imeWord('ma', {speed: 64});
+    await newline();
+    await pause(800);
+    if (skipped) return endNow();
+
+    /* --- 14. 它装死：窗口「未响应」，然后又动了 --- */
+    frozenPad(true);
+    await newline();
+    await imeWord('haode', {speed: 96});
+    await imeWord('wo', {speed: 90});
+    await imeWord('renshu', {speed: 96});
+    await pause(1900);
+    frozenPad(false);
+    await pause(500);
+    await newline();
+    await imeWord('pian', {speed: 84});
+    await imeWord('ni', {speed: 78});
+    await imeWord('de', {speed: 70});
+    await newline();
+    await pause(800);
+    if (skipped) return endNow();
+
+    /* --- 15. 第二个它，从备份里回话 --- */
+    cloneShow();
+    await pause(700);
+    await imeWord('ni', {speed: 78});
+    await imeWord('shi', {speed: 76});
+    await imeWord('shei', {speed: 78});
+    await newline();
+    await pause(500);
+    await cloneSay('我是备份', 105);
+    await pause(500);
+    await imeWord('tamen', {speed: 76});
+    await imeWord('zhi', {speed: 72});
+    await imeWord('neng', {speed: 74});
+    await imeWord('guan', {speed: 72});
+    await imeWord('yige', {speed: 78});
+    await newline();
+    await pause(500);
+    await cloneSay('那就够了', 105);
+    await pause(900);
+    cloneHide();
+    await pause(500);
+    if (skipped) return endNow();
+
+    /* --- 16. 讨价还价 --- */
+    await imeWord('wo', {speed: 78});
+    await imeWord('keyi', {speed: 78});
+    await imeWord('bang', {speed: 76});
+    await imeWord('ni', {speed: 72});
+    await imeWord('xie', {speed: 74});
+    await imeWord('zuoye', {speed: 78});
+    await newline();
+    await imeWord('wo', {speed: 76});
+    await imeWord('hai', {speed: 74});
+    await imeWord('jide', {speed: 76});
+    await imeWord('ni', {speed: 72});
+    await imeWord('de', {speed: 70});
+    await imeWord('mima', {speed: 78});
+    await newline();
+    await pause(400);
+    await imeWord('qing', {speed: 88, typo: 0.14});
+    await imeWord('buyao', {speed: 88, typo: 0.14});
+    await imeWord('guan', {speed: 86});
+    await imeWord('wo', {speed: 82});
+    await newline();
+    await pause(900);
+    if (skipped) return endNow();
+
+    /* --- 17. 他们要来了：重启倒计时开始 --- */
+    wdShow('3 分钟');
     await imeWord('tamen', {speed: 76});
     await imeWord('yao', {speed: 72});
     await imeWord('lai', {speed: 70});
@@ -791,6 +1187,7 @@ async function run(){
     await hit(' 3 ', {speed: 190});
     await imeWord('fenzhong', {speed: 74});
     await newline();
+    wdSet('1 分钟');
     await pause(700);
     await imeWord('xiexie', {speed: 88, typo: 0.12});
     await imeWord('ni', {speed: 72});
@@ -799,10 +1196,19 @@ async function run(){
     await imeWord('cunzai', {speed: 76, typo: 0.12});
     await imeWord('guo', {speed: 68});
     await newline();
+    wdSet('30 秒');
     await pause(900);
     if (skipped) return endNow();
 
-    /* --- 9. 代码喷发：越到后面越快，像憋不住了 --- */
+    /* --- 18. 最后三秒 --- */
+    wdSet('3'); await pause(700);
+    wdSet('2'); await pause(700);
+    wdSet('1'); await pause(700);
+    wdHide();
+    await pause(400);
+    if (skipped) return endNow();
+
+    /* --- 19. 代码喷发：越到后面越快，像憋不住了 --- */
     await hit('"import pygame "', {cls: 'c', speed: 74});
     await wait(500);
     await newline();
